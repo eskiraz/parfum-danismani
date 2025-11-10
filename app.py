@@ -3,10 +3,15 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
 
-# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (76 PARFÜMLÜK TAM VERİTABANI) ---
-# TÜM "kod" ALANLARI GÜNCELLENDİ (Örn: "LRN.09.008" -> "008")
+# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (96 PARFÜMLÜK TAM VERİTABANI - v1.2) ---
 parfum_veritabani_json = """
 [
+  {
+    "kod": "002",
+    "orijinal_ad": "Amouage Honour Man",
+    "kategori": "Baharatlı, Odunsu, Taze",
+    "notalar": ["Pembe Biber", "Sardunya", "Elemi", "Muskat", "Tütsü", "Güve Otu", "Sedir", "Misk", "Tonka Fasulyesi", "Paçuli"]
+  },
   {
     "kod": "008",
     "orijinal_ad": "Creed Aventus",
@@ -17,13 +22,61 @@ parfum_veritabani_json = """
     "kod": "010",
     "orijinal_ad": "Ex Nihilo Fleur Narcotique",
     "kategori": "Çiçeksi, Meyveli",
-    "notalar": ["Liçi", "Şakayık", "Şeftali", "Portakal Çi çi", "Misk", "Yasemin"]
+    "notalar": ["Liçi", "Şakayık", "Şeftali", "Portakal Çiçeği", "Misk", "Yasemin"]
+  },
+  {
+    "kod": "012",
+    "orijinal_ad": "Frederic Malle Portrait of a Lady",
+    "kategori": "Çiçeksi, Amber, Baharatlı",
+    "notalar": ["Gül", "Karanfil", "Ahududu", "Siyah Frenk Üzümü", "Tarçın", "Paçuli", "Tütsü", "Sandal Ağacı", "Misk", "Amber", "Benzoin"]
+  },
+  {
+    "kod": "013",
+    "orijinal_ad": "Maison Francis Kurkdjian Baccarat Rouge 540",
+    "kategori": "Çiçeksi, Odunsu, Amber",
+    "notalar": ["Safran", "Yasemin", "Amberwood", "Ambergris", "Reçine", "Sedir"]
+  },
+  {
+    "kod": "021",
+    "orijinal_ad": "Nasomatto Black Afgano",
+    "kategori": "Odunsu, Tütsü, Baharatlı",
+    "notalar": ["Kenevir", "Yeşil Notalar", "Reçine", "Odunsu Notalar", "Tütün", "Kahve", "Ud", "Tütsü"]
+  },
+  {
+    "kod": "024",
+    "orijinal_ad": "Tom Ford Black Orchid",
+    "kategori": "Amber, Çiçeksi, Gurme",
+    "notalar": ["Yasemin", "Gardenya", "Ylang Ylang", "Bergamot", "Frenk Üzümü", "Yumru", "Baharat", "Meyveli Notalar", "Orkide", "Vetiver", "Sandal Ağacı", "Paçuli", "Amber", "Tütsü", "Vanilya", "Çikolata"]
+  },
+  {
+    "kod": "027",
+    "orijinal_ad": "Xerjoff Erba Pura",
+    "kategori": "Narenciye, Meyveli, Misk",
+    "notalar": ["Sicilya Portakalı", "Calabria Bergamotu", "Sicilya Limonu", "Tropikal Meyveler", "Beyaz Misk", "Amber", "Madagaskar Vanilyası"]
   },
   {
     "kod": "031",
     "orijinal_ad": "Memo Paris Marfa",
     "kategori": "Çiçeksi, Odunsu, Misk",
     "notalar": ["Sümbülteber", "Agave", "Vanilya", "Portakal Çiçeği", "Sandal Ağacı", "Beyaz Misk"]
+  },
+  {
+    "kod": "040",
+    "orijinal_ad": "Parfums de Marly Delina",
+    "kategori": "Çiçeksi, Meyveli, Taze",
+    "notalar": ["Liçi", "Rhubarb", "Bergamot", "Muskat", "Türk Gülü", "Şakayık", "Vanilya", "Kaşmir", "Sedir", "Vetiver", "Tütsü", "Misk"]
+  },
+  {
+    "kod": "041",
+    "orijinal_ad": "Zadig & Voltaire This is Her",
+    "kategori": "Odunsu, Vanilya, Gurme",
+    "notalar": ["Yasemin", "Yumuşak Vanilya", "Kestane", "Sandal Ağacı"]
+  },
+  {
+    "kod": "045",
+    "orijinal_ad": "Gucci Intense Oud",
+    "kategori": "Ud, Amber, Oryantal",
+    "notalar": ["Armut", "Ahududu", "Safran", "Bulgar Gülü", "Portakal Çiçeği", "Doğal Ud", "Paçuli"]
   },
   {
     "kod": "049",
@@ -44,10 +97,22 @@ parfum_veritabani_json = """
     "notalar": ["Ud", "Meyvemsi Notalar", "Amber", "Güve Otu", "Olibanum"]
   },
   {
+    "kod": "068",
+    "orijinal_ad": "Tom Ford Noir Extreme",
+    "kategori": "Amber, Baharatlı, Odunsu",
+    "notalar": ["Kakule", "Muskat", "Safran", "Mandalina", "Neroli", "Gül", "Yasemin", "Damla Sakızı", "Vanilya", "Amber", "Odunsu Notalar", "Sandal Ağacı"]
+  },
+  {
     "kod": "078",
     "orijinal_ad": "Maison Francis Kurkdjian Baccarat Rouge 540 Extrait",
     "kategori": "Amber, Odunsu, Baharatlı",
     "notalar": ["Safran", "Acı Badem", "Mısır Yasemini", "Sedir", "Ambergris", "Misk"]
+  },
+  {
+    "kod": "079",
+    "orijinal_ad": "Orto Parisi Megamare",
+    "kategori": "Aromatik, Akuatik (Deniz), Misk",
+    "notalar": ["Bergamot", "Limon", "Yosun", "Calone", "Hedione", "Ambrox", "Sedir", "Misk"]
   },
   {
     "kod": "080",
@@ -92,10 +157,28 @@ parfum_veritabani_json = """
     "notalar": ["Vişne", "Zencefil", "Yasemin", "Pembe Biber", "Misk"]
   },
   {
+    "kod": "114",
+    "orijinal_ad": "Initio Musk Therapy",
+    "kategori": "Misk, Odunsu, Çiçeksi",
+    "notalar": ["Bergamot", "Greyfurt", "Sedir Ağacı", "Gül", "Paçuli", "Sandal Ağacı", "Vanilya", "Amber", "Ambergris"]
+  },
+  {
     "kod": "116",
     "orijinal_ad": "Tom Ford Vanilla Sex",
     "kategori": "Amber, Vanilya, Gurme",
     "notalar": ["Vanilya", "Acı Badem", "Sandal Ağacı", "Tonka Fasulyesi", "Çiçeksi Notalar"]
+  },
+  {
+    "kod": "117",
+    "orijinal_ad": "Kilian Angels' Share",
+    "kategori": "Gurme, Amber, Baharatlı",
+    "notalar": ["Konyak", "Tarçın", "Tonka Fasulyesi", "Meşe", "Pralin", "Vanilya", "Sandal Ağacı"]
+  },
+  {
+    "kod": "120",
+    "orijinal_ad": "Marc-Antoine Barrois Tilia",
+    "kategori": "Aromatik, Çiçeksi, Odunsu",
+    "notalar": ["Lime", "Katırtırnağı (bitki)", "Yasemin", "Vetiver", "Kediotu", "Sedir Ağacı", "Ambroxan"]
   },
   {
     "kod": "122",
@@ -110,6 +193,18 @@ parfum_veritabani_json = """
     "notalar": ["Tonka Fasulyesi", "Şeker Kamışı", "Safran", "Ud", "Gül", "Amber"]
   },
   {
+    "kod": "124",
+    "orijinal_ad": "Louis Vuitton Imagination",
+    "kategori": "Narenciye, Taze, Odunsu",
+    "notalar": ["Limon", "Bergamot", "Yasemin", "Gül", "Frezya", "Sandal Ağacı", "Amber", "Vanilya"]
+  },
+  {
+    "kod": "125",
+    "orijinal_ad": "Amouage Guidance",
+    "kategori": "Çiçeksi, Oryantal, Gurme",
+    "notalar": ["Armut", "Tütsü", "Fındık", "Safran", "Gül", "Yasemin", "Sandal Ağacı", "Amber", "Vanilya"]
+  },
+  {
     "kod": "127",
     "orijinal_ad": "Kayali Vanilla 28",
     "kategori": "Amber, Vanilya, Gurme",
@@ -120,6 +215,12 @@ parfum_veritabani_json = """
     "orijinal_ad": "Parfums de Marly Althair",
     "kategori": "Amber, Vanilya, Gurme",
     "notalar": ["Vanilya", "Tarçın", "Pralin", "Kakule", "Portakal Çiçeği", "Misk"]
+  },
+  {
+    "kod": "202",
+    "orijinal_ad": "Dolce & Gabbana The One EDP",
+    "kategori": "Oryantal, Baharatlı, Odunsu",
+    "notalar": ["Greyfurt", "Kişniş", "Fesleğen", "Zencefil", "Kakule", "Portakal Çiçeği", "Tütün", "Amber", "Sedir Ağacı"]
   },
   {
     "kod": "206",
@@ -134,10 +235,28 @@ parfum_veritabani_json = """
     "notalar": ["Deniz Notaları", "Limon", "Bergamot", "Mandalina", "Yasemin", "Beyaz Misk", "Sedir"]
   },
   {
+    "kod": "208",
+    "orijinal_ad": "Giorgio Armani Code Profumo",
+    "kategori": "Amber, Baharatlı, Odunsu",
+    "notalar": ["Tonka Fasulyesi", "Kakule", "Odunsu Notalar"]
+  },
+  {
     "kod": "209",
     "orijinal_ad": "Giorgio Armani Si Parfum",
     "kategori": "Şipre, Meyveli, Vanilya",
     "notalar": ["Siyah Frenk Üzümü", "Gül", "Vanilya", "Paçuli", "Frezya", "Mandalina"]
+  },
+  {
+    "kod": "210",
+    "orijinal_ad": "Giorgio Armani Si Intense",
+    "kategori": "Amber, Çiçeksi, Vanilya",
+    "notalar": ["Siyah Frenk Üzümü", "Gül", "Davana", "Vanilya", "Siyah Çay", "Paçuli"]
+  },
+  {
+    "kod": "211",
+    "orijinal_ad": "Giorgio Armani Code for Women",
+    "kategori": "Çiçeksi, Oryantal",
+    "notalar": ["Zambak", "Yasemin", "Taze Zencefil", "Portakal Çiçeği", "Vanilya", "Sandal Ağacı"]
   },
   {
     "kod": "215",
@@ -541,8 +660,8 @@ def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
 
 # Sayfa Başlığı
 st.set_page_config(page_title="Lorinna Parfüm Danışmanı", layout="wide")
-st.title("🤖 Lorinna Yapay Zeka Parfüm Danışmanı")
-st.write(f"Şu anda veritabanında {len(veritabani)} adet parfüm yüklü.")
+st.title("🤖 Lorinna Yapay Zeka Parfüm Danışmanı (v1.2)")
+st.write(f"Şu anda veritabanında **{len(veritabani)}** adet parfüm yüklü.")
 
 # Arayüzü iki sütuna böl
 col1, col2 = st.columns(2)
