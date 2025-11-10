@@ -755,4 +755,9 @@ def nota_ile_parfum_bul(arama_terimi, db):
     sonuclar = []
     arama_terimi = arama_terimi.lower()
     for parfum in db:
-        tum_notalar_ve_kategoriler = parfum['kategori'].
+        # Hatalı kısım burasıydı, şimdi düzeltildi:
+        tum_notalar_ve_kategoriler = parfum['kategori'].lower() + " " + " ".join(parfum['notalar']).lower() 
+        if arama_terimi in tum_notalar_ve_kategoriler:
+            sonuclar.append(parfum)
+    return sonuclar
+  
