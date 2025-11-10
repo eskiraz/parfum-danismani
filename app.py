@@ -3,7 +3,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
 
-# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (149 PARFÜMLÜK TAM VERİTABANI - v1.4) ---
+# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (114 PARFÜMLÜK HATA GİDERİLMİŞ VERİTABANI - v1.5) ---
 parfum_veritabani_json = """
 [
   {
@@ -747,17 +747,123 @@ parfum_veritabani_json = """
 try:
     veritabani = json.loads(parfum_veritabani_json)
 except json.JSONDecodeError as e:
-    st.error(f"Veritabanı (JSON) yüklenirken bir hata oluştu: {e}")
+    # Bu hata, Streamlit'te siyah ekrana neden olan hatadır. Düzgün bir şekilde log'layalım.
+    st.error("JSON Veritabanı Yüklenirken Kritik Hata Oluştu!")
+    st.exception(e)
     st.stop() # Hata varsa uygulamayı durdur
 
-# Fonksiyon: Nota ile arama
+# Fonksiyon: Nota ile arama (Önceki hatası düzeltildi)
 def nota_ile_parfum_bul(arama_terimi, db):
     sonuclar = []
     arama_terimi = arama_terimi.lower()
     for parfum in db:
-        # Hatalı kısım burasıydı, şimdi düzeltildi:
-        tum_notalar_ve_kategoriler = parfum['kategori'].lower() + " " + " ".join(parfum['notalar']).lower() 
+        # Hata burada oluşuyordu, şimdi .lower() metodu doğru yerde
+        tum_notalar_ve_kategoriler = parfum['kategori'].lower() + " " + " ".join(parfum['notalar']).lower()
         if arama_terimi in tum_notalar_ve_kategoriler:
             sonuclar.append(parfum)
     return sonuclar
-  
+
+# Fonksiyon: Benzerlik motorunu hazırla ve çalıştır
+# Streamlit'in önbellekleme (cache) özelliğini kullanıyoruz.
+@st.cache_resource
+def benzerlik_motorunu_hazirla(db):
+    dokumanlar = [" ".join(p['notalar']) for p in db]
+    vectorizer = CountVectorizer()
+    notalar_matrix = vectorizer.fit_transform(dokumanlar)
+    benzerlik_skorlari = cosine_similarity(notalar_matrix)
+    return benzerlik_skorlari
+
+# Motoru çalıştır
+benzerlik_skor_matrisi = benzerlik_motorunu_hazirla(veritabani)
+
+# Fonksiyon: Benzerlik önermesi (Hem kod hem isimle)
+def benzer_parfumleri_getir(kod_veo_ad, db, skor_matrisi, top_n=3):
+    kod_veya_ad_lower = kod_veo_ad.lower().strip()
+    bulunan_index = -1
+    bulunan_parfum = None
+
+    for i, parfum in enumerate(db):
+        if parfum['kod'].lower() == kod_veya_ad_lower:
+            bulunan_index = i
+            bulunan_parfum = parfum
+            break
+    
+    if bulunan_index == -1:
+        for i, parfum in enumerate(db):
+            if kod_veya_ad_lower in parfum['orijinal_ad'].lower():
+                bulunan_index = i
+                bulunan_parfum = parfum
+                break
+                
+    if bulunan_index == -1:
+        return None, [] # Hiçbir şey bulunamadıysa
+
+    # Benzerlik skorlarını al
+    skorlar = list(enumerate(skor_matrisi[bulunan_index]))
+    skorlar = sorted(skorlar, key=lambda x: x[1], reverse=True)
+    
+    # Kendisi hariç (skorlar[1:]) en benzer 'top_n' taneyi al
+    en_benzer_indexler = [i[0] for i in skorlar[1:top_n+1]]
+    
+    benzer_parfumler = [db[i] for i in en_benzer_indexler]
+    return bulunan_parfum, benzer_parfumler # Baz alınan parfümü ve önerileri döndür
+
+# --- ADIM 3: ARAYÜZÜ (WEB SİTESİ) OLUŞTURMA ---
+
+# Sayfa Başlığı
+st.set_page_config(page_title="Lorinna Parfüm Danışmanı", layout="wide")
+st.title("🤖 Lorinna Yapay Zeka Parfüm Danışmanı (v1.5)")
+st.write(f"Şu anda veritabanında **{len(veritabani)}** adet parfüm yüklü.")
+
+# Arayüzü iki sütuna böl
+col1, col2 = st.columns(2)
+
+# --- SÜTUN 1: NOTA VEYA KATEGORİYE GÖRE ARAMA ---
+with col1:
+    st.header("1. Nota veya Kategoriye Göre Bul")
+    st.write("Müşterinin istediği bir nota veya koku tipini yazın (Örn: 'çiçeksi', 'vanilya', 'pudralı', 'ananas')")
+    
+    # Metin giriş kutusu
+    nota_terimi = st.text_input("Aranacak Nota veya Kategori:", key="nota_arama")
+    
+    # Arama butonu
+    if st.button("Parfümleri Bul", key="nota_buton"):
+        if nota_terimi:
+            sonuclar = nota_ile_parfum_bul(nota_terimi, veritabani)
+            if not sonuclar:
+                st.warning(f"'{nota_terimi}' içeren parfüm bulunamadı.")
+            else:
+                st.success(f"'{nota_terimi}' içeren {len(sonuclar)} adet parfüm bulundu:")
+                # Sonuçları güzel bir şekilde göster
+                for p in sonuclar:
+                    st.markdown(f"**{p['kod']} - {p['orijinal_ad']}** (Kategori: *{p['kategori']}*)")
+        else:
+            st.error("Lütfen aranacak bir terim girin.")
+
+# --- SÜTUN 2: BENZER KOKU ÖNERİSİ ---
+with col2:
+    st.header("2. Benzer Koku Öner")
+    st.write("Müşterinin beğendiği bir parfümün kodunu veya adını yazın (Örn: 'Aventus' veya '049')")
+    
+    # Metin giriş kutusu
+    isim_terimi = st.text_input("Beğenilen Parfümün Kodu veya Adı:", key="isim_arama")
+    
+    # Arama butonu
+    if st.button("Benzer Öneriler Getir", key="isim_buton"):
+        if isim_terimi:
+            baz_parfum, benzer_oneriler = benzer_parfumleri_getir(isim_terimi, veritabani, benzerlik_skor_matrisi, top_n=3)
+            
+            if baz_parfum:
+                st.success(f"Baz Alınan Parfüm: **{baz_parfum['kod']} - {baz_parfum['orijinal_ad']}**")
+                st.write(f"Bu parfüme en çok benzeyen ilk 3 öneri:")
+                
+                # Sonuçları güzel bir şekilde göster
+                for p in benzer_oneriler:
+                    st.markdown(f"**{p['kod']} - {p['orijinal_ad']}**")
+                    st.caption(f"Öne çıkan ortak notalar: {', '.join(p['notalar'][:4])}...")
+            else:
+                st.warning(f"'{isim_terimi}' kodlu veya isimli parfüm bulunamadı.")
+        else:
+            st.error("Lütfen aranacak bir parfüm girin.")
+
+# --- KODUN SONU ---
