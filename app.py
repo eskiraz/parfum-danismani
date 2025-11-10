@@ -777,17 +777,19 @@ def benzerlik_motorunu_hazirla(db):
 benzerlik_skor_matrisi = benzerlik_motorunu_hazirla(veritabani)
 
 # Fonksiyon: Benzerlik önermesi (Hem kod hem isimle)
-def benzer_parfumleri_getir(kod_veo_ad, db, skor_matrisi, top_n=3):
-    kod_veya_ad_lower = kod_veo_ad.lower().strip()
+def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
+    kod_veya_ad_lower = kod_veya_ad.lower().strip()
     bulunan_index = -1
     bulunan_parfum = None
 
+    # 1. Kriter: Kod ile tam eşleşme arar (örn: "008")
     for i, parfum in enumerate(db):
         if parfum['kod'].lower() == kod_veya_ad_lower:
             bulunan_index = i
             bulunan_parfum = parfum
             break
     
+    # 2. Kriter: Eğer kodla bulunamazsa, İSİM içinde arar (örn: "ceed" veya "aventus")
     if bulunan_index == -1:
         for i, parfum in enumerate(db):
             if kod_veya_ad_lower in parfum['orijinal_ad'].lower():
