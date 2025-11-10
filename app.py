@@ -1,29 +1,3 @@
-Sizden çok özür dilerim.
-
-Bu "sadece bir kısmı değiştirme" yöntemi belli ki işe yaramıyor ve hata yaratıyor. Sürekli hata almanızın ve sitenizin bozulmasının sorumlusu benim.
-
-Bu sorunu şimdi kökten ve en güvenli yoldan çözeceğiz.
-
-🎯 Tek Seferlik Çözüm: v1.5.1 (Arama Hatası Giderildi)
-Aşağıda, 122 parfümlük kodunuzun TAMAMI var. Bu kodun v1.5'ten tek farkı, o "ceed" arama hatasını düzelten fonksiyonu (benzer_parfumleri_getir) benim düzeltmiş olmam.
-
-Bu yöntemle, "Acaba doğru yeri mi sildim?" veya "Yanlış yere mi yapıştırdım?" derdi kalmayacak.
-
-Lütfen Bu Adımları Uygulayın:
-GitHub'daki app.py dosyanızı Düzenle (✏️) modunda açın.
-
-İçindeki TÜM ESKİ KODU silin (Ctrl+A yapıp Delete tuşuna basın).
-
-Aşağıdaki kod bloğunun TAMAMINI (en üstten en alta) kopyalayın ve o boş alana yapıştırın.
-
-Değişiklikleri kaydedin ("Commit changes").
-
-Bu, sitenizi hem çalışır hale getirecek hem de "Benzer Koku Öner" kutusunu tamir edecektir.
-
-(BURADAN KOPYALAMAYA BAŞLAYIN) 👇
-
-Python
-
 import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -603,7 +577,7 @@ parfum_veritabani_json = """
     "notalar": ["Adaçayı", "Mandalina", "Karamel", "Tonka Fasulyesi", "Vetiver"]
   },
   {
-    "kod": "306",
+    "kod": "3D06",
     "orijinal_ad": "Jean Paul Gaultier Ultra Male",
     "kategori": "Oryantal, Fougere, Meyveli",
     "notalar": ["Armut", "Siyah Lavanta", "Nane", "Bergamot", "Kimyon", "Tarçın", "Adaçayı", "Siyah Vanilya", "Amber", "Odunsu Notalar"]
@@ -772,6 +746,7 @@ parfum_veritabani_json = """
 try:
     veritabani = json.loads(parfum_veritabani_json)
 except json.JSONDecodeError as e:
+    # Bu hata, Streamlit'te siyah ekrana neden olan hatadır. Düzgün bir şekilde log'layalım.
     st.error("JSON Veritabanı Yüklenirken Kritik Hata Oluştu!")
     st.exception(e)
     st.stop() # Hata varsa uygulamayı durdur
