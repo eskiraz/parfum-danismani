@@ -3,8 +3,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
 
-# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (v2.7) ---
-# VERİTABANI OLDUĞU GİBİ YÜKLENECEK. RESİM YOLLARI HİÇ OKUNMAYACAK.
+# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (v2.8) ---
+# VERİTABANI OLDUĞU GİBİ YÜKLENECEK.
 parfum_veritabani_json = """
 [
   {
@@ -281,4 +281,870 @@ parfum_veritabani_json = """
   },
   {
     "kod": "128",
-    "or
+    "orijinal_ad": "Parfums de Marly Althair",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Vanilya, Baharatlı, Odunsu",
+    "notalar": ["Portakal Çiçeği", "Bergamot", "Tarçın", "Bourbon Vanilya", "Elemi", "Guaiac Wood", "Ambrox", "Pralin", "Misk"]
+  },
+  {
+    "kod": "134",
+    "orijinal_ad": "Louis Vuitton L'Immensité",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Akuatik, Aromatik, Narenciye",
+    "notalar": ["Greyfurt", "Zencefil", "Bergamot", "Su Notaları", "Adaçayı", "Biberiye", "Ambroxan", "Kehribar", "Labdanum"]
+  },
+  {
+    "kod": "202",
+    "orijinal_ad": "Dolce & Gabbana The One EDP",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Oryantal, Baharatlı, Odunsu",
+    "notalar": ["Greyfurt", "Kişniş", "Fesleğen", "Zencefil", "Kakule", "Portakal Çiçeği", "Tütün", "Amber", "Sedir Ağacı"]
+  },
+  {
+    "kod": "206",
+    "orijinal_ad": "Donna Karan Be Delicious Green",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Taze, Çiçeksi, Meyveli",
+    "notalar": ["Elma", "Salatalık", "Greyfurt", "Manolya", "Gül", "Sandal Ağacı", "Beyaz Amber"]
+  },
+  {
+    "kod": "207",
+    "orijinal_ad": "Giorgio Armani Acqua di Gio",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Aromatik, Akuatik (Deniz), Taze",
+    "notalar": ["Deniz Notaları", "Limon", "Bergamot", "Mandalina", "Yasemin", "Beyaz Misk", "Sedir"]
+  },
+  {
+    "kod": "208",
+    "orijinal_ad": "Giorgio Armani Code Profumo",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Baharatlı, Odunsu",
+    "notalar": ["Tonka Fasulyesi", "Kakule", "Odunsu Notalar"]
+  },
+  {
+    "kod": "209",
+    "orijinal_ad": "Giorgio Armani Si Parfum",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Şipre, Meyveli, Vanilya",
+    "notalar": ["Siyah Frenk Üzümü", "Gül", "Vanilya", "Paçuli", "Frezya", "Mandalina"]
+  },
+  {
+    "kod": "210",
+    "orijinal_ad": "Giorgio Armani Si Intense",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Çiçeksi, Vanilya",
+    "notalar": ["Siyah Frenk Üzümü", "Gül", "Davana", "Vanilya", "Siyah Çay", "Paçuli"]
+  },
+  {
+    "kod": "211",
+    "orijinal_ad": "Giorgio Armani Code for Women",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Oryantal",
+    "notalar": ["Zambak", "Yasemin", "Taze Zencefil", "Portakal Çiçeği", "Vanilya", "Sandal Ağacı"]
+  },
+  {
+    "kod": "215",
+    "orijinal_ad": "Gucci by Flora",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Meyveli, Tatlı",
+    "notalar": ["Gardenya", "Armut Çiçeği", "Esmer Şeker", "Kırmızı Meyveler", "Paçuli", "Yasemin"]
+  },
+  {
+    "kod": "217",
+    "orijinal_ad": "Guerlain Robe Noir",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Meyveli, Tatlı",
+    "notalar": ["Vişne", "Gül", "Badem", "Siyah Frenk Üzümü", "Misk", "Paçuli"]
+  },
+  {
+    "kod": "218",
+    "orijinal_ad": "Hermes Terre de Hermes",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Baharatlı, Narenciye",
+    "notalar": ["Portakal", "Greyfurt", "Vetiver", "Biber", "Sedir", "Paçuli"]
+  },
+  {
+    "kod": "222",
+    "orijinal_ad": "Lacoste L.12.12 Blanc - White",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Aromatik, Taze",
+    "notalar": ["Greyfurt", "Kakule", "Sümbülteber", "Ylang-Ylang", "Süet", "Vetiver"]
+  },
+  {
+    "kod": "224",
+    "orijinal_ad": "Lacoste Pour Femme",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Odunsu, Pudralı",
+    "notalar": ["Frezya", "Karabiber", "Yasemin", "Süet", "Sedir Ağacı", "Heliotrop"]
+  },
+  {
+    "kod": "225",
+    "orijinal_ad": "Lancome Tresor La Nuit",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Gurme, Vanilya",
+    "notalar": ["Pralin", "Karamel", "Vanilya", "Orkide", "Gül", "Liçi", "Paçuli", "Kahve"]
+  },
+  {
+    "kod": "226",
+    "orijinal_ad": "Lancome La Vie Est Belle",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Gurme, Tatlı",
+    "notalar": ["İris", "Pralin", "Vanilya", "Paçuli", "Portakal Çiçeği", "Siyah Frenk Üzümü"]
+  },
+  {
+    "kod": "229",
+    "orijinal_ad": "Moschino Love Love",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Odunsu, Narenciye",
+    "notalar": ["Greyfurt", "Portakal", "Limon", "Şeker Kamışı", "Misk", "Sedir", "Kırmızı Frenk Üzümü"]
+  },
+  {
+    "kod": "231",
+    "orijinal_ad": "Paco Rabanne Invictus",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Akuatik (Deniz), Odunsu, Taze",
+    "notalar": ["Deniz Notaları", "Greyfurt", "Defne Yaprağı", "Ambergris", "Guaiac Ağacı", "Meşe Yosunu"]
+  },
+  {
+    "kod": "233",
+    "orijinal_ad": "Paco Rabanne Olympea",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Çiçeksi, Gurme",
+    "notalar": ["Tuzlu Vanilya", "Su Yasemini", "Mandalina", "Zambak", "Kaşmir Ağacı", "Ambergris"]
+  },
+  {
+    "kod": "234",
+    "orijinal_ad": "Paco Rabanne Lady Million",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Meyveli, Tatlı",
+    "notalar": ["Bal", "Paçuli", "Portakal Çiçeği", "Ahududu", "Yasemin", "Amber"]
+  },
+  {
+    "kod": "235",
+    "orijinal_ad": "Thierry Mugler Alien",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Beyaz Çiçek, Amber",
+    "notalar": ["Yasemin", "Kaşmir", "Beyaz Amber", "Odunsu Notalar"]
+  },
+  {
+    "kod": "238",
+    "orijinal_ad": "Versace Eros",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Aromatik, Fougère, Taze",
+    "notalar": ["Nane", "Yeşil Elma", "Limon", "Tonka Fasulyesi", "Vanilya", "Amber", "Sedir"]
+  },
+  {
+    "kod": "241",
+    "orijinal_ad": "Versace Crystal Noir",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Baharatlı, Çiçeksi, Amber",
+    "notalar": ["Kakule", "Karabiber", "Zencefil", "Gardenya", "Hindistan Cevizi", "Amber", "Misk"]
+  },
+  {
+    "kod": "242",
+    "orijinal_ad": "Yves Saint Laurent Black Opium",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Gurme, Vanilya",
+    "notalar": ["Kahve", "Vanilya", "Portakal Çiçeği", "Armut", "Yasemin", "Misk", "Sedir"]
+  },
+  {
+    "kod": "243",
+    "orijinal_ad": "Carolina Herrera 212 VIP",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Vanilya, Rom, Gurme",
+    "notalar": ["Rom", "Vanilya", "Çarkıfelek", "Tonka Fasulyesi", "Gardenya", "Misk"]
+  },
+  {
+    "kod": "246",
+    "orijinal_ad": "Bvlgari Aqva Pour Homme",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Akuatik (Deniz), Aromatik, Taze",
+    "notalar": ["Deniz Yosunu", "Mandalina", "Pamuk Çiçeği", "Sedir", "Amber"]
+  },
+  {
+    "kod": "248",
+    "orijinal_ad": "Calvin Klein Euphoria",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Çiçeksi, Meyveli",
+    "notalar": ["Nar", "Siyah Orkide", "Lotus Çiçeği", "Amber", "Misk", "Paçuli", "Maun"]
+  },
+  {
+    "kod": "249",
+    "orijinal_ad": "Carrolina Herrera 212 Sexy Magnetik",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Çiçeksi, Tatlı",
+    "notalar": ["Pamuk Şekeri", "Pembe Biber", "Vanilya", "Misk", "Gardenya", "Sandal Ağacı", "Mandalina"]
+  },
+  {
+    "kod": "251",
+    "orijinal_ad": "Carolina Herrera 212 Sexy",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Oryantal, Çiçeksi, Tatlı",
+    "notalar": ["Gül", "Biber", "Bergamot", "Gardenya", "Sardunya", "Pamuk Şekeri", "Vanilya", "Baharat"]
+  },
+  {
+    "kod": "253",
+    "orijinal_ad": "Chanel Bleu de Chanel",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Aromatik, Odunsu, Amber",
+    "notalar": ["Limon", "Bergamot", "Nane", "Pelin Otu", "Lavanta", "Sardunya", "Ananas", "Sandal Ağacı", "Sedir", "Amberwood", "Tonka Fasulyesi"]
+  },
+  {
+    "kod": "255",
+    "orijinal_ad": "Christian Dior J'adore",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Meyveli",
+    "notalar": ["Ylang-Ylang", "Yasemin", "Gül", "Şeftali", "Armut", "Misk", "Sedir"]
+  },
+  {
+    "kod": "256",
+    "orijinal_ad": "Christian Dior Addict",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Çiçeksi, Vanilya",
+    "notalar": ["Vanilya", "Tonka Fasulyesi", "Yasemin", "Portakal Çiçeği", "Sandal Ağacı", "Bourbon Vanilyası"]
+  },
+  {
+    "kod": "260",
+    "orijinal_ad": "Christian Dior Homme Intense",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Çiçeksi, Misk",
+    "notalar": ["İris", "Lavanta", "Sedir", "Vetiver", "Kakao", "Amber"]
+  },
+  {
+    "kod": "261",
+    "orijinal_ad": "Christian Dior Fahrenheit",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Deri, Aromatik, Odunsu",
+    "notalar": ["Menekşe Yaprağı", "Deri", "Muskat", "Sedir", "Vetiver", "Lavanta"]
+  },
+  {
+    "kod": "262",
+    "orijinal_ad": "Chanel Coco Mademoiselle",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Şipre, Çiçeksi, Narenciye",
+    "notalar": ["Narenciye", "Portakal", "Bergamot", "Yasemin", "Gül", "Liçi", "Amber", "Beyaz Misk", "Vetiver", "Paçuli"]
+  },
+  {
+    "kod": "263",
+    "orijinal_ad": "Chanel Chance Eau Tendre",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Meyveli",
+    "notalar": ["Greyfurt", "Ayva", "Yasemin", "Gül", "Beyaz Misk", "Hafif Odunsu Notalar", "Amber"]
+  },
+  {
+    "kod": "264",
+    "orijinal_ad": "Chanel Chance Eau de Parfum",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Baharatlı, Amber",
+    "notalar": ["Pembe Biber", "Yasemin", "Ambersi Paçuli", "Beyaz Misk", "Vanilya"]
+  },
+  {
+    "kod": "265",
+    "orijinal_ad": "Chanel No. 5",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Aldehit, Sabunsu",
+    "notalar": ["Aldehitler", "Ylang-Ylang", "Neroli", "Gül", "Yasemin", "Sandal Ağacı", "Vanilya", "Amber"]
+  },
+  {
+    "kod": "267",
+    "orijinal_ad": "Chloé Eau de Parfum",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Gül, Pudralı",
+    "notalar": ["Şakayık", "Liçi", "Gül", "Manolya", "Sedir", "Amber"]
+  },
+  {
+    "kod": "268",
+    "orijinal_ad": "Chanel Egoiste",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Baharatlı, Sandal Ağacı",
+    "notalar": ["Sandal Ağacı", "Gül", "Tarçın", "Vanilya", "Tütün", "Limon"]
+  },
+  {
+    "kod": "270",
+    "orijinal_ad": "Emporio Armani Stronger With You",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Aromatik, Baharatlı",
+    "notalar": ["Nane", "Menekşe Yaprağı", "Pembe Biber", "Kakule", "Tarçın", "Lavanta", "Ananas", "Kavun", "Adaçayı", "Amber", "Sedir", "Kestane", "Vanilya"]
+  },
+  {
+    "kod": "271",
+    "orijinal_ad": "YSL Libre",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Odunsu, Misk",
+    "notalar": ["Mandalina Yağı", "Tahıl Yağı", "Fransız Lavanta Yağı", "Kuşüzümü", "Lavanta Yağı", "Zambak", "Yasemin", "Portakal Çiçeği", "Vanilya Özü", "Sedir Ağacı Yağı", "Amber", "Misk"]
+  },
+  {
+    "kod": "274",
+    "orijinal_ad": "Burberry Classic",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Meyveli, Çiçeksi, Odunsu",
+    "notalar": ["Yeşil Elma", "Bergamot", "Şeftali", "Kayısı", "Erik", "Yasemin", "Sandal Ağacı", "Sedir", "Misk", "Vanilya"]
+  },
+  {
+    "kod": "275",
+    "orijinal_ad": "Burberry Classic Men",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Aromatik",
+    "notalar": ["Bergamot", "Taze Nane", "Lavanta", "Dağ Kekiği", "Itır Çiçeği", "Sandal Ağacı", "Amber", "Sedir"]
+  },
+  {
+    "kod": "276",
+    "orijinal_ad": "Chloé Love",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Baharatlı",
+    "notalar": ["Mor Salkımlı Sümbüller", "Leylaklar", "Portakal Çiçeği", "Sıcak Baharatlar"]
+  },
+  {
+    "kod": "278",
+    "orijinal_ad": "Paco Rabanne Black XS for Him",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Oryantal, Odunsu, Tatlı",
+    "notalar": ["Turunçgiller", "Limon", "Adaçayı", "Kadife Çiçeği", "Pralin", "Tarçın", "Tolu Balsamı", "Siyah Kakule", "Paçuli", "Siyah Kehribar", "Abanoz Ağacı", "Palisander Gül Ağacı"]
+  },
+  {
+    "kod": "281",
+    "orijinal_ad": "Giorgio Armani Sì Passione",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Meyveli, Tatlı",
+    "notalar": ["Ananas", "Gül", "Armut", "Vanilya", "Sedir", "Amberwood"]
+  },
+  {
+    "kod": "282",
+    "orijinal_ad": "Gucci Guilty Pour Homme",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Aromatik, Taze",
+    "notalar": ["Limon", "Lavanta", "Neroli", "Sedir", "Paçuli", "Amber"]
+  },
+  {
+    "kod": "284",
+    "orijinal_ad": "Givenchy Insensé Ultramarine",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Akuatik (Deniz), Taze, Meyveli",
+    "notalar": ["Kırmızı Meyveler", "Deniz Notaları", "Nane", "Manolya", "Vetiver", "Tütün"]
+  },
+  {
+    "kod": "285",
+    "orijinal_ad": "Bvlgari Man in Black",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Baharatlı, Deri",
+    "notalar": ["Baharatlar", "Rom", "Tütün", "Deri", "İris", "Sümbülteber", "Tonka Fasulyesi", "Guaiac Ağacı", "Benzoin"]
+  },
+  {
+    "kod": "286",
+    "orijinal_ad": "Narciso Rodriguez For Her",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Misk, Çiçeksi, Odunsu",
+    "notalar": ["Vişne", "Erik", "Frezya", "Orkide", "İris", "Vanilya", "Misk", "Amber"]
+  },
+  {
+    "kod": "288",
+    "orijinal_ad": "Jean Paul Gaultier Le Male",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Aromatik, Odunsu, Tatlı",
+    "notalar": ["Kakule", "Lavanta", "İris", "Vanilya", "Doğu Notaları", "Odunsu Notalar"]
+  },
+  {
+    "kod": "289",
+    "orijinal_ad": "Carolina Herrera 212 Men",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Aromatik, Baharatlı",
+    "notalar": ["Narenciye Yaprakları", "Kesik Çim", "Baharat Yaprakları", "Taze Biber", "Zencefil", "Gardenya", "Sandal Ağacı", "Gayak Ağacı", "Tütsülenmiş Beyaz Misk"]
+  },
+  {
+    "kod": "291",
+    "orijinal_ad": "Rochas Femme",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Şipre, Meyveli, Baharatlı",
+    "notalar": ["Erik", "Şeftali", "Tarçın", "Karanfil", "Gül", "Meşe Yosunu", "Amber", "Misk"]
+  },
+  {
+    "kod": "292",
+    "orijinal_ad": "Victoria's Secret Bombshell",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Meyveli, Çiçeksi",
+    "notalar": ["Çarkıfelek Meyvesi", "Greyfurt", "Ananas", "Mandalina", "Çilek", "Şakayık", "Vanilya Orkidesi", "Kırmızı Meyveler", "Yasemin", "Müge Çiçeği", "Misk", "Odunsu Notalar", "Meşe Yosunu"]
+  },
+  {
+    "kod": "293",
+    "orijinal_ad": "Victoria's Secret Sexy Little Things",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Meyveli, Tatlı",
+    "notalar": ["Armut", "Liçi", "Kırmızı Elma", "Mandalina", "Gardenya", "Yasemin", "Frezya", "Manolya", "Vanilya", "Pralin", "Amber", "Misk", "Sandal Ağacı", "Benzoin"]
+  },
+  {
+    "kod": "298",
+    "orijinal_ad": "Lancôme Idôle",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Şipre, Misk",
+    "notalar": ["Armut", "Bergamot", "Isparta Gülü", "Yasemin Çiçeği", "Beyaz Şipre", "Beyaz Misk", "Vanilya"]
+  },
+  {
+    "kod": "299",
+    "orijinal_ad": "Narciso Rodriguez Poudrée",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Pudralı, Misk, Odunsu",
+    "notalar": ["Şehvetli Çiçek Buketi", "Beyaz Yasemin Yaprakları", "Bulgar Gülü", "Pudramsı Misk", "Vetiver", "Sedir Ağacı"]
+  },
+  {
+    "kod": "301",
+    "orijinal_ad": "YSL L'Homme",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Baharatlı, Narenciye",
+    "notalar": ["Beyaz Biber", "Limon", "Ağaç Kavunu", "Bergamot", "Meyvemsi Davana Notaları", "Likör", "Portakal Çiçeği", "Islak Otsu Notalar", "Sedir", "Aselbent", "Amber"]
+  },
+  {
+    "kod": "304",
+    "orijinal_ad": "Issey Miyake L'Eau d'Issey Pour Homme",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Akuatik, Narenciye",
+    "notalar": ["Yuzu", "Limon", "Mine Çiçeği", "Mandalina", "Selvi", "Calone", "Kişniş", "Tarhun", "Adaçayı", "Mavi Lotus", "Muskat", "Müge Çiçeği", "Geranyum", "Safran", "Tarçın", "Vetiver", "Tütün"]
+  },
+  {
+    "kod": "305",
+    "orijinal_ad": "Jean Paul Gaultier Scandal Pour Homme",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Aromatik, Odunsu, Karamel",
+    "notalar": ["Adaçayı", "Mandalina", "Karamel", "Tonka Fasulyesi", "Vetiver"]
+  },
+  {
+    "kod": "306",
+    "orijinal_ad": "Jean Paul Gaultier Ultra Male",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Oryantal, Fougere, Meyveli",
+    "notalar": ["Armut", "Siyah Lavanta", "Nane", "Bergamot", "Kimyon", "Tarçın", "Adaçayı", "Siyah Vanilya", "Amber", "Odunsu Notalar"]
+  },
+  {
+    "kod": "308",
+    "orijinal_ad": "Diesel Fuel for Life Homme",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Aromatik, Odunsu, Fougère",
+    "notalar": ["Anason", "Greyfurt", "Ahududu", "Lavanta", "Guaiac Ağacı", "Vetiver"]
+  },
+  {
+    "kod": "309",
+    "orijinal_ad": "Viktor&Rolf Spicebomb",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Oryantal, Baharatlı",
+    "notalar": ["Bergamot", "Greyfurt", "Tarçın", "Pembe Biber", "Lavanta", "Elemi", "Vetiver", "Tütün", "Deri"]
+  },
+  {
+    "kod": "310",
+    "orijinal_ad": "Paco Rabanne 1 Million Lucky",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Taze, Tatlı",
+    "notalar": ["Ozonik Notalar", "Erik", "Bergamot", "Greyfurt", "Portakal Çiçeği", "Bal", "Yasemin", "Kaşmir Ahşap", "Sedir", "Fındık", "Amber Ahşap", "Vetiver", "Paçuli", "Meşe Yosunu"]
+  },
+  {
+    "kod": "313",
+    "orijinal_ad": "Jean Paul Gaultier Scandal",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Şipre, Çiçeksi, Bal",
+    "notalar": ["Mandalina", "Kan Portakalı", "Şeftali", "Portakal Çiçeği", "Yasemin", "Gardenya", "Bal", "Meyankökü", "Karamel", "Balmumu", "Paçuli"]
+  },
+  {
+    "kod": "314",
+    "orijinal_ad": "Giorgio Armani My Way",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Odunsu",
+    "notalar": ["Sümbülteber", "Yasemin", "Bergamot", "Portakal Çiçeği", "Vanilya", "Beyaz Misk", "Sedir Ağacı"]
+  },
+  {
+    "kod": "315",
+    "orijinal_ad": "Roberto Cavalli Eau de Parfum",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Çiçeksi, Baharatlı",
+    "notalar": ["Pembe Biber", "Yeşil Mandalina", "Portakal Çiçeği Özü", "Mirabelle Eriği", "Kavrulmuş Tonka Tanesi", "Laos Benzoini"]
+  },
+  {
+    "kod": "316",
+    "orijinal_ad": "Givenchy Very Irrésistible",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Gül, Aromatik",
+    "notalar": ["Anason", "Verbena", "Gül", "Şakayık", "Vanilya", "Paçuli"]
+  },
+  {
+    "kod": "317",
+    "orijinal_ad": "Hugo Boss Bottled Intense",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Baharatlı, Meyveli",
+    "notalar": ["Elma", "Portakal Çiçeği", "Tarçın", "Karanfil", "Sardunya", "Vanilya", "Sandal Ağacı", "Sedir Ağacı", "Güve Otu"]
+  },
+  {
+    "kod": "318",
+    "orijinal_ad": "Givenchy L'Interdit Parfum",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Beyaz Çiçek, Odunsu, Amber",
+    "notalar": ["Armut", "Sümbülteber", "Yasemin", "Portakal Çiçeği", "Vetiver", "Paçuli", "Vanilya"]
+  },
+  {
+    "kod": "319",
+    "orijinal_ad": "Versace Dylan Blue",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Akuatik, Aromatik, Odunsu",
+    "notalar": ["Kalabriyen Bergamot", "Greyfurt", "İncir Yaprağı", "Su Notaları", "Menekşe Yaprakları", "Kara Biber", "Papirus Odunu", "Ambrox", "Paçuli Özü", "Mineral Misk", "Tonka Fasulyesi", "Safran", "Projen Tütsüsü"]
+  },
+  {
+    "kod": "321",
+    "orijinal_ad": "Prada Paradoxe",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Amber",
+    "notalar": ["Armut", "Neroli", "Bergamot", "Yosun", "Yasemin", "Neroli Özü", "Ambrofix", "Serenolide", "Amber", "Bourbon Vanilya", "Vanilya"]
+  },
+  {
+    "kod": "323",
+    "orijinal_ad": "Christian Dior Miss Dior Blooming Bouquet",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Misk",
+    "notalar": ["Gül", "Şakayık", "Bergamot", "Beyaz Misk"]
+  },
+  {
+    "kod": "326",
+    "orijinal_ad": "Giorgio Armani Acqua di Gio Profumo",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Aromatik, Akuatik, Tütsü",
+    "notalar": ["Sucul Notalar", "Bergamot", "Biberiye", "Adaçayı", "Sardunya", "Tütsü", "Paçuli"]
+  },
+  {
+    "kod": "327",
+    "orijinal_ad": "Jean Paul Gaultier Le Male Elixir",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Woody, Amber, Aromatik",
+    "notalar": ["Tonka Fasulyesi", "Lavanta", "Benzoin"]
+  },
+  {
+    "kod": "328",
+    "orijinal_ad": "YSL Myself",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Odunsu, Çiçeksi",
+    "notalar": ["Kalabria Bergamotu", "Tunus Portakal Çiçeği", "Endonezya Paçulisi", "Ambrofix"]
+  },
+  {
+    "kod": "329",
+    "orijinal_ad": "Yves Saint Laurent Y Eau de Parfum",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Aromatik, Baharatlı, Taze",
+    "notalar": ["Zencefil", "Adaçayı", "Elma", "Lavanta", "Greyfurt", "Amberwood", "Tütsü"]
+  },
+  {
+    "kod": "331",
+    "orijinal_ad": "Dior Sauvage Elixir",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Baharatlı, Lavanta, Odunsu",
+    "notalar": ["Tarçın", "Muskat", "Kakule", "Greyfurt", "Lavanta", "Meyan Kökü", "Sandal Ağacı", "Kehribar", "Paçuli", "Haiti Vetiveri"]
+  },
+  {
+    "kod": "332",
+    "orijinal_ad": "Armani Stronger With You Absolutely",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Baharatlı, Odunsu",
+    "notalar": ["Bergamot", "Amber", "Likör", "Meyveli Notalar", "Kestane", "Sedir Ağacı"]
+  },
+  {
+    "kod": "335",
+    "orijinal_ad": "Burberry Goddess",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Oryantal, Vanilya",
+    "notalar": ["Ahududu", "Lavanta", "Vanilya Çiçeği", "Süet", "Kakao", "Zencefil", "Vanilyalı Havyar"]
+  },
+  {
+    "kod": "336",
+    "orijinal_ad": "Carolina Herrera Good Girl Blush",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Amber, Vanilya",
+    "notalar": ["Bergamot", "Ylang Ylang", "Portakal Çiçeği", "Şakayık", "Gardenya", "Gül Suyu", "Tonka Fasulyesi", "Amber", "Vanilya"]
+  },
+  {
+    "kod": "338",
+    "orijinal_ad": "Azzaro The Most Wanted Parfum",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Baharatlı, Odunsu, Citrus",
+    "notalar": ["Zencefil", "Odunsu Notalar", "Vanilya"]
+  },
+  {
+    "kod": "340",
+    "orijinal_ad": "Valentino Uomo Born in Roma Intense",
+    "cinsiyet": "Erkek",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Vanilya, Aromatik",
+    "notalar": ["Vanilya", "Vetiver", "Adaçayı", "Lavanta"]
+  },
+  {
+    "kod": "342",
+    "orijinal_ad": "Jean Paul Gaultier La Belle",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Oryantal, Vanilya, Meyveli",
+    "notalar": ["Armut", "Bergamot", "Vanilya Orkidesi", "Tonka Fasulyesi", "Vetiver", "Amber"]
+  },
+  {
+    "kod": "343",
+    "orijinal_ad": "Jean Paul Gaultier Divine",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Çiçeksi, Misk, Aquatik",
+    "notalar": ["Calypsone", "Kırmızı Meyveler", "Bergamot", "Zambak", "Yasemin", "Ylang-Ylang", "Beze", "Misk", "Paçuli"]
+  },
+  {
+    "kod": "345",
+    "orijinal_ad": "Victoria's Secret Tease",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Meyveli, Çiçeksi, Tatlı",
+    "notalar": ["Armut", "Mandalina", "Liçi", "Kırmızı Elma", "Gardenya", "Bezelye", "Yasemin", "Frezya", "Manolya", "Vanilya", "Benzoin", "Misk", "Pralin", "Kehribar", "Sandal Ağacı"]
+  },
+  {
+    "kod": "346",
+    "orijinal_ad": "YSL Libre Intense",
+    "cinsiyet": "Kadın",
+    "resim_yolu": "eski/yol/onemsiz",
+    "kategori": "Amber, Fougère, Vanilya",
+    "notalar": ["Lavanta", "Vanilya", "Orkide", "Tonka Fasulyesi", "Amber", "Vetiver"]
+  }
+]
+"""
+# --- ADIM 2: VERİTABANINI YÜKLEME VE MOTORU HAZIRLAMA ---
+
+# *** YENİ GÜNCELLEME (v2.8) ***
+# Google Drive linkleri doğrudan resim gösterecek formata çevrildi.
+# LÜTFEN BU 3 DOSYANIN PAYLAŞIM AYARINI "HERKES" YAPIN.
+ERKEK_URL = "https://drive.google.com/uc?id=17WbpwPepfwnmzPncSDrvs55iei235LGU"
+KADIN_URL = "https://drive.google.com/uc?id=1gKu16Je8WeBMvFTVIix1sYWylKJQMmhu"
+NICHE_URL = "https://drive.google.com/uc?id=1_5z1Fz6Oy863h8yRzZUwc-7xCjycWczR"
+
+# Veritabanını yükle
+try:
+    veritabani = json.loads(parfum_veritabani_json)
+except json.JSONDecodeError as e:
+    st.error("JSON Veritabanı Yüklenirken Kritik Hata Oluştu!")
+    st.exception(e)
+    st.stop()
+
+# Fonksiyon: Nota ile arama
+def nota_ile_parfum_bul(arama_terimi, db):
+    sonuclar = []
+    arama_terimleri = arama_terimi.lower().split()
+    
+    for parfum in db:
+        aranacak_metin = (
+            parfum['cinsiyet'].lower() + " " +
+            parfum['kategori'].lower() + " " +
+            " ".join(parfum['notalar']).lower()
+        )
+        if all(terim in aranacak_metin for terim in arama_terimleri):
+            sonuclar.append(parfum)
+            
+    return sonuclar
+
+# Fonksiyon: Benzerlik motorunu hazırla ve çalıştır
+@st.cache_resource
+def benzerlik_motorunu_hazirla(db):
+    dokumanlar = [" ".join(p['notalar']) for p in db]
+    vectorizer = CountVectorizer()
+    notalar_matrix = vectorizer.fit_transform(dokumanlar)
+    benzerlik_skorlari = cosine_similarity(notalar_matrix)
+    return benzerlik_skorlari
+
+# Motoru çalıştır
+benzerlik_skor_matrisi = benzerlik_motorunu_hazirla(veritabani)
+
+# Fonksiyon: Benzerlik önermesi
+def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
+    kod_veya_ad_lower = kod_veya_ad.lower().strip()
+    bulunan_index = -1
+    bulunan_parfum = None
+
+    for i, parfum in enumerate(db):
+        if parfum['kod'].lower() == kod_veya_ad_lower:
+            bulunan_index = i
+            bulunan_parfum = parfum
+            break
+    
+    if bulunan_index == -1:
+        for i, parfum in enumerate(db):
+            if kod_veya_ad_lower in parfum['orijinal_ad'].lower():
+                bulunan_index = i
+                bulunan_parfum = parfum
+                break
+                
+    if bulunan_index == -1:
+        return None, []
+
+    skorlar = list(enumerate(skor_matrisi[bulunan_index]))
+    skorlar = sorted(skorlar, key=lambda x: x[1], reverse=True)
+    en_benzer_indexler = [i[0] for i in skorlar[1:top_n+1]]
+    benzer_parfumler = [db[i] for i in en_benzer_indexler]
+    return bulunan_parfum, benzer_parfumler
+
+# --- ADIM 3: ARAYÜZÜ (WEB SİTESİ) OLUŞTURMA (v2.8 - KATEGORİ) ---
+
+st.set_page_config(page_title="Lorinna Koku Rehberi", layout="wide", page_icon="✨")
+st.title("✨ Lorinna Koku Rehberi (v2.8)")
+st.write(f"Stoktaki **{len(veritabani)}** adet parfüm arasından mükemmel kokuyu bulun.")
+st.markdown("---")
+
+col1, col2 = st.columns(2)
+
+# --- SÜTUN 1: NOTA, KATEGORİ VEYA CİNSİYETE GÖRE ARAMA ---
+with col1:
+    st.header("1. Nota veya Gruba Göre Bul")
+    st.write("Arama kutusuna birden fazla kelime yazabilirsiniz:")
+    st.caption("Örnek aramalar: 'odunsu erkek', 'unisex vanilya', 'çiçeksi kadın', 'ananas'")
+    
+    nota_terimi = st.text_input("Aranacak Nota veya Grup:", key="nota_arama")
+    
+    if st.button("Parfümleri Bul", key="nota_buton"):
+        if nota_terimi:
+            sonuclar = nota_ile_parfum_bul(nota_terimi, veritabani)
+            if not sonuclar:
+                st.warning(f"'{nota_terimi}' içeren parfüm bulunamadı.")
+            else:
+                st.success(f"'{nota_terimi}' içeren {len(sonuclar)} adet parfüm bulundu:")
+                
+                for p in sonuclar:
+                    col_img, col_txt = st.columns([1, 4]) 
+                    with col_img:
+                        # *** v2.8 GÜNCELLEMESİ: Cinsiyete göre resim seçimi ***
+                        if p['cinsiyet'] == "Erkek":
+                            st.image(ERKEK_URL, width=100)
+                        elif p['cinsiyet'] == "Kadın":
+                            st.image(KADIN_URL, width=100)
+                        else: # Bu, "Unisex" olanları kapsar
+                            st.image(NICHE_URL, width=100)
+                    with col_txt:
+                        st.markdown(f"**{p['kod']} - {p['orijinal_ad']} ({p['cinsiyet']})**")
+                        st.caption(f"Kategori: *{p['kategori']}*")
+                    st.divider() 
+        else:
+            st.error("Lütfen aranacak bir terim girin.")
+
+# --- SÜTUN 2: BENZER KOKU ÖNERİSİ ---
+with col2:
+    st.header("2. Benzer Koku Öner")
+    st.write("Parfümün kodunu veya adının bir kısmını yazın (Örn: 'aventus', 'baccarat', '008')")
+    
+    isim_terimi = st.text_input("Beğenilen Parfümün Kodu veya Adı:", key="isim_arama")
+    
+    if st.button("Benzer Öneriler Getir", key="isim_buton"):
+        if isim_terimi:
+            baz_parfum, benzer_oneriler = benzer_parfumleri_getir(isim_terimi, veritabani, benzerlik_skor_matrisi, top_n=3)
+            
+            if baz_parfum:
+                st.success(f"Baz Alınan Parfüm:")
+                col_img_baz, col_txt_baz = st.columns([1, 4])
+                with col_img_baz:
+                    # *** v2.8 GÜNCELLEMESİ: Cinsiyete göre resim seçimi ***
+                    if baz_parfum['cinsiyet'] == "Erkek":
+                        st.image(ERKEK_URL, width=100)
+                    elif baz_parfum['cinsiyet'] == "Kadın":
+                        st.image(KADIN_URL, width=100)
+                    else: # Unisex
+                        st.image(NICHE_URL, width=100)
+                with col_txt_baz:
+                    st.markdown(f"**{baz_parfum['kod']} - {baz_parfum['orijinal_ad']} ({baz_parfum['cinsiyet']})**")
+                
+                st.markdown("---")
+                st.write(f"Bu parfüme en çok benzeyen ilk 3 öneri:")
+                
+                for p in benzer_oneriler:
+                    col_img, col_txt = st.columns([1, 4])
+                    with col_img:
+                        # *** v2.8 GÜNCELLEMESİ: Cinsiyete göre resim seçimi ***
+                        if p['cinsiyet'] == "Erkek":
+                            st.image(ERKEK_URL, width=100)
+                        elif p['cinsiyet'] == "Kadın":
+                            st.image(KADIN_URL, width=100)
+                        else: # Unisex
+                            st.image(NICHE_URL, width=100)
+                    with col_txt:
+                        st.markdown(f"**{p['kod']} - {p['orijinal_ad']} ({p['cinsiyet']})**")
+                        st.caption(f"Öne çıkan ortak notalar: {', '.join(p['notalar'][:4])}...")
+                    st.divider()
+            else:
+                st.warning(f"'{isim_terimi}' kodlu veya isimli parfüm bulunamadı.")
+        else:
+            st.error("Lütfen aranacak bir parfüm girin.")
+
+# --- KODUN SONU ---
