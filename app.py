@@ -3,7 +3,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
 
-# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (96 PARFÜMLÜK TAM VERİTABANI - v1.2) ---
+# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (149 PARFÜMLÜK TAM VERİTABANI - v1.4) ---
 parfum_veritabani_json = """
 [
   {
@@ -141,8 +141,8 @@ parfum_veritabani_json = """
   {
     "kod": "099",
     "orijinal_ad": "Maison Francis Kurkdjian Oud Silk Mood",
-    "kategori": "Amber, Çiçeksi, Odunsu",
-    "notalar": ["Ud", "Bulgar Gülü", "Papatya", "Papirüs", "Guaiac Ağacı"]
+    "kategori": "Gül, Oud, Misk",
+    "notalar": ["Gül", "Papatya", "Bergamot", "Hedione", "Guaiac Ağacı", "Oud", "Papirüs"]
   },
   {
     "kod": "102",
@@ -153,8 +153,8 @@ parfum_veritabani_json = """
   {
     "kod": "106",
     "orijinal_ad": "Tom Ford Electric Cherry",
-    "kategori": "Çiçeksi, Meyveli",
-    "notalar": ["Vişne", "Zencefil", "Yasemin", "Pembe Biber", "Misk"]
+    "kategori": "Meyveli, Çiçeksi, Misk",
+    "notalar": ["Kiraz", "Zencefil", "Yasemin Sambac", "Ambrette", "Pembe Biber", "Misk", "Odunsu Notalar"]
   },
   {
     "kod": "114",
@@ -166,7 +166,7 @@ parfum_veritabani_json = """
     "kod": "116",
     "orijinal_ad": "Tom Ford Vanilla Sex",
     "kategori": "Amber, Vanilya, Gurme",
-    "notalar": ["Vanilya", "Acı Badem", "Sandal Ağacı", "Tonka Fasulyesi", "Çiçeksi Notalar"]
+    "notalar": ["Badem", "Yasemin", "Portakal Çiçeği", "Vanilya", "Sandal Ağacı", "Amber"]
   },
   {
     "kod": "117",
@@ -177,44 +177,50 @@ parfum_veritabani_json = """
   {
     "kod": "120",
     "orijinal_ad": "Marc-Antoine Barrois Tilia",
-    "kategori": "Aromatik, Çiçeksi, Odunsu",
-    "notalar": ["Lime", "Katırtırnağı (bitki)", "Yasemin", "Vetiver", "Kediotu", "Sedir Ağacı", "Ambroxan"]
+    "kategori": "Çiçeksi, Odunsu",
+    "notalar": ["Lime", "Katırtırnağı", "Yasemin", "Vetiver", "Kediotu", "Sedir Ağacı", "Ambroxan"]
   },
   {
     "kod": "122",
     "orijinal_ad": "Parfums de Marly Layton",
-    "kategori": "Amber, Çiçeksi, Baharatlı",
-    "notalar": ["Elma", "Vanilya", "Lavanta", "Kakule", "Sandal Ağacı", "Bergamot"]
+    "kategori": "Oryantal, Çiçeksi, Baharatlı",
+    "notalar": ["Elma", "Bergamot", "Lavanta", "Yasemin", "Menekşe", "Gülhatmi", "Vanilya", "Biber", "Guaiac Ağacı", "Paçuli"]
   },
   {
     "kod": "123",
     "orijinal_ad": "Montale Arabians Tonka",
-    "kategori": "Amber, Gurme, Odunsu",
-    "notalar": ["Tonka Fasulyesi", "Şeker Kamışı", "Safran", "Ud", "Gül", "Amber"]
+    "kategori": "Oryantal, Odunsu, Tonka",
+    "notalar": ["Safran", "Bergamot", "Ud", "Bulgar Gülü", "Tonka Fasulyesi", "Şeker Kamışı", "Amber", "Beyaz Misk", "Meşe Yosunu"]
   },
   {
     "kod": "124",
     "orijinal_ad": "Louis Vuitton Imagination",
-    "kategori": "Narenciye, Taze, Odunsu",
-    "notalar": ["Limon", "Bergamot", "Yasemin", "Gül", "Frezya", "Sandal Ağacı", "Amber", "Vanilya"]
+    "kategori": "Narenciye, Amber, Çay",
+    "notalar": ["Ağaç Kavunu", "Bergamot", "Portakal", "Zencefil", "Neroli", "Tarçın", "Siyah Çay", "Ambroksan", "Olibanum", "Guaiac Ağacı"]
   },
   {
     "kod": "125",
     "orijinal_ad": "Amouage Guidance",
-    "kategori": "Çiçeksi, Oryantal, Gurme",
-    "notalar": ["Armut", "Tütsü", "Fındık", "Safran", "Gül", "Yasemin", "Sandal Ağacı", "Amber", "Vanilya"]
+    "kategori": "Çiçeksi, Baharatlı, Gourmand",
+    "notalar": ["Armut", "Fındık Sütü", "Safran", "Gül", "Yasemin", "Osmanthus", "Sandal Ağacı", "Vanilya", "Deri", "Tütsü", "Ambergris"]
   },
   {
     "kod": "127",
-    "orijinal_ad": "Kayali Vanilla 28",
-    "kategori": "Amber, Vanilya, Gurme",
-    "notalar": ["Vanilya Orkidelesi", "Kahverengi Şeker", "Tonka Fasulyesi", "Amber", "Paçuli"]
+    "orijinal_ad": "Kayali Vanilla",
+    "kategori": "Amber, Vanilya",
+    "notalar": ["Vanilya", "Yasemin", "Orkide", "Esmer Şeker", "Tonka Fasulyesi", "Amber", "Misk", "Paçuli"]
   },
   {
     "kod": "128",
     "orijinal_ad": "Parfums de Marly Althair",
-    "kategori": "Amber, Vanilya, Gurme",
-    "notalar": ["Vanilya", "Tarçın", "Pralin", "Kakule", "Portakal Çiçeği", "Misk"]
+    "kategori": "Vanilya, Baharatlı, Odunsu",
+    "notalar": ["Portakal Çiçeği", "Bergamot", "Tarçın", "Bourbon Vanilya", "Elemi", "Guaiac Wood", "Ambrox", "Pralin", "Misk"]
+  },
+  {
+    "kod": "134",
+    "orijinal_ad": "Louis Vuitton L'Immensité",
+    "kategori": "Akuatik, Aromatik, Narenciye",
+    "notalar": ["Greyfurt", "Zencefil", "Bergamot", "Su Notaları", "Adaçayı", "Biberiye", "Ambroxan", "Kehribar", "Labdanum"]
   },
   {
     "kod": "202",
@@ -325,16 +331,40 @@ parfum_veritabani_json = """
     "notalar": ["Bal", "Paçuli", "Portakal Çiçeği", "Ahududu", "Yasemin", "Amber"]
   },
   {
+    "kod": "235",
+    "orijinal_ad": "Thierry Mugler Alien",
+    "kategori": "Odunsu, Beyaz Çiçek, Amber",
+    "notalar": ["Yasemin", "Kaşmir", "Beyaz Amber", "Odunsu Notalar"]
+  },
+  {
     "kod": "238",
     "orijinal_ad": "Versace Eros",
     "kategori": "Aromatik, Fougère, Taze",
     "notalar": ["Nane", "Yeşil Elma", "Limon", "Tonka Fasulyesi", "Vanilya", "Amber", "Sedir"]
   },
   {
+    "kod": "241",
+    "orijinal_ad": "Versace Crystal Noir",
+    "kategori": "Baharatlı, Çiçeksi, Amber",
+    "notalar": ["Kakule", "Karabiber", "Zencefil", "Gardenya", "Hindistan Cevizi", "Amber", "Misk"]
+  },
+  {
     "kod": "242",
     "orijinal_ad": "Yves Saint Laurent Black Opium",
     "kategori": "Amber, Gurme, Vanilya",
     "notalar": ["Kahve", "Vanilya", "Portakal Çiçeği", "Armut", "Yasemin", "Misk", "Sedir"]
+  },
+  {
+    "kod": "243",
+    "orijinal_ad": "Carolina Herrera 212 VIP",
+    "kategori": "Vanilya, Rom, Gurme",
+    "notalar": ["Rom", "Vanilya", "Çarkıfelek", "Tonka Fasulyesi", "Gardenya", "Misk"]
+  },
+  {
+    "kod": "246",
+    "orijinal_ad": "Bvlgari Aqva Pour Homme",
+    "kategori": "Akuatik (Deniz), Aromatik, Taze",
+    "notalar": ["Deniz Yosunu", "Mandalina", "Pamuk Çiçeği", "Sedir", "Amber"]
   },
   {
     "kod": "248",
@@ -350,243 +380,363 @@ parfum_veritabani_json = """
   },
   {
     "kod": "251",
-    "orijinal_ad": "Carrolina Herrera 212 Sexy",
-    "kategori": "Amber, Çiçeksi, Tatlı",
-    "notalar": ["Pamuk Şekeri", "Pembe Biber", "Vanilya", "Misk", "Gardenya", "Sandal Ağacı", "Mandalina"]
+    "orijinal_ad": "Carolina Herrera 212 Sexy",
+    "kategori": "Oryantal, Çiçeksi, Tatlı",
+    "notalar": ["Gül", "Biber", "Bergamot", "Gardenya", "Sardunya", "Pamuk Şekeri", "Vanilya", "Baharat"]
   },
   {
     "kod": "253",
     "orijinal_ad": "Chanel Bleu de Chanel",
-    "kategori": "Aromatik, Odunsu, Taze",
-    "notalar": ["Limon", "Bergamot", "Nane", "Zencefil", "Sandal Ağacı", "Sedir", "Amberwood"]
+    "kategori": "Aromatik, Odunsu, Amber",
+    "notalar": ["Limon", "Bergamot", "Nane", "Pelin Otu", "Lavanta", "Sardunya", "Ananas", "Sandal Ağacı", "Sedir", "Amberwood", "Tonka Fasulyesi"]
+  },
+  {
+    "kod": "255",
+    "orijinal_ad": "Christian Dior J'adore",
+    "kategori": "Çiçeksi, Meyveli",
+    "notalar": ["Ylang-Ylang", "Yasemin", "Gül", "Şeftali", "Armut", "Misk", "Sedir"]
+  },
+  {
+    "kod": "256",
+    "orijinal_ad": "Christian Dior Addict",
+    "kategori": "Amber, Çiçeksi, Vanilya",
+    "notalar": ["Vanilya", "Tonka Fasulyesi", "Yasemin", "Portakal Çiçeği", "Sandal Ağacı", "Bourbon Vanilyası"]
+  },
+  {
+    "kod": "260",
+    "orijinal_ad": "Christian Dior Homme Intense",
+    "kategori": "Odunsu, Çiçeksi, Misk",
+    "notalar": ["İris", "Lavanta", "Sedir", "Vetiver", "Kakao", "Amber"]
+  },
+  {
+    "kod": "261",
+    "orijinal_ad": "Christian Dior Fahrenheit",
+    "kategori": "Deri, Aromatik, Odunsu",
+    "notalar": ["Menekşe Yaprağı", "Deri", "Muskat", "Sedir", "Vetiver", "Lavanta"]
   },
   {
     "kod": "262",
-    "orijinal_ad": "Chanel Mademoiselle",
-    "kategori": "Amber, Çiçeksi, Şipre",
-    "notalar": ["Portakal", "Bergamot", "Yasemin", "Gül", "Paçuli", "Beyaz Misk", "Vetiver"]
+    "orijinal_ad": "Chanel Coco Mademoiselle",
+    "kategori": "Şipre, Çiçeksi, Narenciye",
+    "notalar": ["Narenciye", "Portakal", "Bergamot", "Yasemin", "Gül", "Liçi", "Amber", "Beyaz Misk", "Vetiver", "Paçuli"]
   },
   {
     "kod": "263",
     "orijinal_ad": "Chanel Chance Eau Tendre",
-    "kategori": "Çiçeksi, Meyveli, Taze",
-    "notalar": ["Ayva", "Greyfurt", "Yasemin", "Gül", "Beyaz Misk", "Amber"]
+    "kategori": "Çiçeksi, Meyveli",
+    "notalar": ["Greyfurt", "Ayva", "Yasemin", "Gül", "Beyaz Misk", "Hafif Odunsu Notalar", "Amber"]
   },
   {
     "kod": "264",
-    "orijinal_ad": "Chanel Chance Parfum",
-    "kategori": "Şipre, Çiçeksi, Baharatlı",
-    "notalar": ["Pembe Biber", "Yasemin", "Paçuli", "Amber", "Beyaz Misk", "Vanilya", "İris"]
+    "orijinal_ad": "Chanel Chance Eau de Parfum",
+    "kategori": "Çiçeksi, Baharatlı, Amber",
+    "notalar": ["Pembe Biber", "Yasemin", "Ambersi Paçuli", "Beyaz Misk", "Vanilya"]
+  },
+  {
+    "kod": "265",
+    "orijinal_ad": "Chanel No. 5",
+    "kategori": "Çiçeksi, Aldehit, Sabunsu",
+    "notalar": ["Aldehitler", "Ylang-Ylang", "Neroli", "Gül", "Yasemin", "Sandal Ağacı", "Vanilya", "Amber"]
+  },
+  {
+    "kod": "267",
+    "orijinal_ad": "Chloé Eau de Parfum",
+    "kategori": "Çiçeksi, Gül, Pudralı",
+    "notalar": ["Şakayık", "Liçi", "Gül", "Manolya", "Sedir", "Amber"]
+  },
+  {
+    "kod": "268",
+    "orijinal_ad": "Chanel Egoiste",
+    "kategori": "Odunsu, Baharatlı, Sandal Ağacı",
+    "notalar": ["Sandal Ağacı", "Gül", "Tarçın", "Vanilya", "Tütün", "Limon"]
   },
   {
     "kod": "270",
     "orijinal_ad": "Emporio Armani Stronger With You",
-    "kategori": "Aromatik, Gurme, Vanilya",
-    "notalar": ["Kestane", "Vanilya", "Kardamon (Kakule)", "Lavanta", "Pembe Biber", "Adaçayı"]
+    "kategori": "Odunsu, Aromatik, Baharatlı",
+    "notalar": ["Nane", "Menekşe Yaprağı", "Pembe Biber", "Kakule", "Tarçın", "Lavanta", "Ananas", "Kavun", "Adaçayı", "Amber", "Sedir", "Kestane", "Vanilya"]
   },
   {
     "kod": "271",
-    "orijinal_ad": "Yves Saint Laurent Libre",
-    "kategori": "Amber, Fougère, Çiçeksi",
-    "notalar": ["Lavanta", "Portakal Çiçeği", "Mandalina", "Vanilya", "Gri Amber", "Misk"]
+    "orijinal_ad": "YSL Libre",
+    "kategori": "Çiçeksi, Odunsu, Misk",
+    "notalar": ["Mandalina Yağı", "Tahıl Yağı", "Fransız Lavanta Yağı", "Kuşüzümü", "Lavanta Yağı", "Zambak", "Yasemin", "Portakal Çiçeği", "Vanilya Özü", "Sedir Ağacı Yağı", "Amber", "Misk"]
   },
   {
     "kod": "274",
-    "orijinal_ad": "Burberry Classic (Women)",
-    "kategori": "Çiçeksi, Meyveli, Odunsu",
-    "notalar": ["Şeftali", "Kayısı", "Siyah Frenk Üzümü", "Yasemin", "Sandal Ağacı", "Misk", "Vanilya"]
+    "orijinal_ad": "Burberry Classic",
+    "kategori": "Meyveli, Çiçeksi, Odunsu",
+    "notalar": ["Yeşil Elma", "Bergamot", "Şeftali", "Kayısı", "Erik", "Yasemin", "Sandal Ağacı", "Sedir", "Misk", "Vanilya"]
   },
   {
     "kod": "275",
     "orijinal_ad": "Burberry Classic Men",
-    "kategori": "Aromatik, Odunsu, Taze",
-    "notalar": ["Lavanta", "Nane", "Bergamot", "Kekik", "Sandal Ağacı", "Sedir", "Amber", "Misk"]
+    "kategori": "Odunsu, Aromatik",
+    "notalar": ["Bergamot", "Taze Nane", "Lavanta", "Dağ Kekiği", "Itır Çiçeği", "Sandal Ağacı", "Amber", "Sedir"]
   },
   {
     "kod": "276",
-    "orijinal_ad": "Chloe Love (Story)",
-    "kategori": "Çiçeksi, Sabunsu, Taze",
-    "notalar": ["Portakal Çiçeği", "Neroli", "Yasemin", "Misk", "Sedir Ağacı", "Armut"]
+    "orijinal_ad": "Chloé Love",
+    "kategori": "Çiçeksi, Baharatlı",
+    "notalar": ["Mor Salkımlı Sümbüller", "Leylaklar", "Portakal Çiçeği", "Sıcak Baharatlar"]
   },
   {
     "kod": "278",
-    "orijinal_ad": "Paco Rabanne Black XS Men",
-    "kategori": "Amber, Odunsu, Tatlı",
-    "notalar": ["Pralin", "Tarçın", "Siyah Kakule", "Limon", "Adaçayı", "Paçuli", "Siyah Amber"]
+    "orijinal_ad": "Paco Rabanne Black XS for Him",
+    "kategori": "Oryantal, Odunsu, Tatlı",
+    "notalar": ["Turunçgiller", "Limon", "Adaçayı", "Kadife Çiçeği", "Pralin", "Tarçın", "Tolu Balsamı", "Siyah Kakule", "Paçuli", "Siyah Kehribar", "Abanoz Ağacı", "Palisander Gül Ağacı"]
+  },
+  {
+    "kod": "281",
+    "orijinal_ad": "Giorgio Armani Sì Passione",
+    "kategori": "Çiçeksi, Meyveli, Tatlı",
+    "notalar": ["Ananas", "Gül", "Armut", "Vanilya", "Sedir", "Amberwood"]
+  },
+  {
+    "kod": "282",
+    "orijinal_ad": "Gucci Guilty Pour Homme",
+    "kategori": "Odunsu, Aromatik, Taze",
+    "notalar": ["Limon", "Lavanta", "Neroli", "Sedir", "Paçuli", "Amber"]
+  },
+  {
+    "kod": "284",
+    "orijinal_ad": "Givenchy Insensé Ultramarine",
+    "kategori": "Akuatik (Deniz), Taze, Meyveli",
+    "notalar": ["Kırmızı Meyveler", "Deniz Notaları", "Nane", "Manolya", "Vetiver", "Tütün"]
   },
   {
     "kod": "285",
     "orijinal_ad": "Bvlgari Man in Black",
     "kategori": "Amber, Baharatlı, Deri",
-    "notalar": ["Baharatlar", "Rom", "Tütün", "Deri", "İris", "Tonka Fasulyesi", "Guaiac Ağacı"]
+    "notalar": ["Baharatlar", "Rom", "Tütün", "Deri", "İris", "Sümbülteber", "Tonka Fasulyesi", "Guaiac Ağacı", "Benzoin"]
   },
   {
     "kod": "286",
-    "orijinal_ad": "Narciso Rodriguez for Her",
-    "kategori": "Çiçeksi, Odunsu, Misk",
-    "notalar": ["Misk", "Gül", "Şeftali", "Amber", "Sandal Ağacı", "Paçuli"]
+    "orijinal_ad": "Narciso Rodriguez For Her",
+    "kategori": "Misk, Çiçeksi, Odunsu",
+    "notalar": ["Vişne", "Erik", "Frezya", "Orkide", "İris", "Vanilya", "Misk", "Amber"]
   },
   {
     "kod": "288",
     "orijinal_ad": "Jean Paul Gaultier Le Male",
-    "kategori": "Amber, Fougère, Aromatik",
-    "notalar": ["Lavanta", "Vanilya", "Nane", "Kakule", "Tarçın", "Tonka Fasulyesi", "Sandal Ağacı"]
+    "kategori": "Aromatik, Odunsu, Tatlı",
+    "notalar": ["Kakule", "Lavanta", "İris", "Vanilya", "Doğu Notaları", "Odunsu Notalar"]
   },
   {
     "kod": "289",
     "orijinal_ad": "Carolina Herrera 212 Men",
-    "kategori": "Odunsu, Misk, Taze Baharatlı",
-    "notalar": ["Yeşil Notalar", "Zencefil", "Greyfurt", "Bergamot", "Baharatlar", "Misk", "Sandal Ağacı"]
+    "kategori": "Odunsu, Aromatik, Baharatlı",
+    "notalar": ["Narenciye Yaprakları", "Kesik Çim", "Baharat Yaprakları", "Taze Biber", "Zencefil", "Gardenya", "Sandal Ağacı", "Gayak Ağacı", "Tütsülenmiş Beyaz Misk"]
+  },
+  {
+    "kod": "291",
+    "orijinal_ad": "Rochas Femme",
+    "kategori": "Şipre, Meyveli, Baharatlı",
+    "notalar": ["Erik", "Şeftali", "Tarçın", "Karanfil", "Gül", "Meşe Yosunu", "Amber", "Misk"]
   },
   {
     "kod": "292",
-    "orijinal_ad": "Victoria Secret Bombshell",
-    "kategori": "Çiçeksi, Meyveli, Taze",
-    "notalar": ["Çarkıfelek", "Ananas", "Greyfurt", "Çilek", "Şakayık", "Vanilya Orkidesi", "Misk"]
+    "orijinal_ad": "Victoria's Secret Bombshell",
+    "kategori": "Meyveli, Çiçeksi",
+    "notalar": ["Çarkıfelek Meyvesi", "Greyfurt", "Ananas", "Mandalina", "Çilek", "Şakayık", "Vanilya Orkidesi", "Kırmızı Meyveler", "Yasemin", "Müge Çiçeği", "Misk", "Odunsu Notalar", "Meşe Yosunu"]
   },
   {
     "kod": "293",
-    "orijinal_ad": "Victoria Secret Sexy Little (Noir Tease)",
-    "kategori": "Çiçeksi, Meyveli, Gurme",
-    "notalar": ["Vanilya", "Pralin", "Armut", "Gardenya", "Amber", "Liçi", "Misk"]
+    "orijinal_ad": "Victoria's Secret Sexy Little Things",
+    "kategori": "Çiçeksi, Meyveli, Tatlı",
+    "notalar": ["Armut", "Liçi", "Kırmızı Elma", "Mandalina", "Gardenya", "Yasemin", "Frezya", "Manolya", "Vanilya", "Pralin", "Amber", "Misk", "Sandal Ağacı", "Benzoin"]
   },
   {
     "kod": "298",
-    "orijinal_ad": "Lancome Idole Icone (L'Intense)",
-    "kategori": "Şipre, Çiçeksi, Odunsu",
-    "notalar": ["Gül", "Yasemin", "Misk", "Vanilya", "Paçuli", "Sedir Ağacı", "Acı Portakal"]
+    "orijinal_ad": "Lancôme Idôle",
+    "kategori": "Çiçeksi, Şipre, Misk",
+    "notalar": ["Armut", "Bergamot", "Isparta Gülü", "Yasemin Çiçeği", "Beyaz Şipre", "Beyaz Misk", "Vanilya"]
   },
   {
     "kod": "299",
-    "orijinal_ad": "Narciso Rodriguez Poudree",
-    "kategori": "Çiçeksi, Odunsu, Pudralı",
-    "notalar": ["Pudralı Notalar", "Misk", "Yasemin", "Gül", "Sedir", "Vetiver", "Kumarin"]
+    "orijinal_ad": "Narciso Rodriguez Poudrée",
+    "kategori": "Pudralı, Misk, Odunsu",
+    "notalar": ["Şehvetli Çiçek Buketi", "Beyaz Yasemin Yaprakları", "Bulgar Gülü", "Pudramsı Misk", "Vetiver", "Sedir Ağacı"]
   },
   {
     "kod": "301",
-    "orijinal_ad": "Yves Saint Laurent L'Homme",
-    "kategori": "Odunsu, Çiçeksi, Misk",
-    "notalar": ["Zencefil", "Bergamot", "Limon", "Baharatlar", "Beyaz Biber", "Vetiver", "Sedir"]
+    "orijinal_ad": "YSL L'Homme",
+    "kategori": "Odunsu, Baharatlı, Narenciye",
+    "notalar": ["Beyaz Biber", "Limon", "Ağaç Kavunu", "Bergamot", "Meyvemsi Davana Notaları", "Likör", "Portakal Çiçeği", "Islak Otsu Notalar", "Sedir", "Aselbent", "Amber"]
   },
   {
     "kod": "304",
-    "orijinal_ad": "Issey Miyake Pour Homme",
-    "kategori": "Odunsu, Akuatik (Deniz), Narenciye",
-    "notalar": ["Yuzu", "Limon", "Bergamot", "Lotus Çiçeği", "Muskat", "Sedir", "Vetiver", "Misk"]
+    "orijinal_ad": "Issey Miyake L'Eau d'Issey Pour Homme",
+    "kategori": "Odunsu, Akuatik, Narenciye",
+    "notalar": ["Yuzu", "Limon", "Mine Çiçeği", "Mandalina", "Selvi", "Calone", "Kişniş", "Tarhun", "Adaçayı", "Mavi Lotus", "Muskat", "Müge Çiçeği", "Geranyum", "Safran", "Tarçın", "Vetiver", "Tütün"]
   },
   {
     "kod": "305",
-    "orijinal_ad": "Jean Paul Gaultier Scandal US Man",
-    "kategori": "Amber, Odunsu, Gurme",
-    "notalar": ["Karamel", "Tonka Fasulyesi", "Adaçayı", "Mandalina", "Vetiver"]
+    "orijinal_ad": "Jean Paul Gaultier Scandal Pour Homme",
+    "kategori": "Aromatik, Odunsu, Karamel",
+    "notalar": ["Adaçayı", "Mandalina", "Karamel", "Tonka Fasulyesi", "Vetiver"]
   },
   {
     "kod": "306",
     "orijinal_ad": "Jean Paul Gaultier Ultra Male",
-    "kategori": "Amber, Fougère, Tatlı",
-    "notalar": ["Armut", "Vanilya", "Lavanta", "Tarçın", "Nane", "Amber"]
+    "kategori": "Oryantal, Fougere, Meyveli",
+    "notalar": ["Armut", "Siyah Lavanta", "Nane", "Bergamot", "Kimyon", "Tarçın", "Adaçayı", "Siyah Vanilya", "Amber", "Odunsu Notalar"]
+  },
+  {
+    "kod": "308",
+    "orijinal_ad": "Diesel Fuel for Life Homme",
+    "kategori": "Aromatik, Odunsu, Fougère",
+    "notalar": ["Anason", "Greyfurt", "Ahududu", "Lavanta", "Guaiac Ağacı", "Vetiver"]
   },
   {
     "kod": "309",
-    "orijinal_ad": "Victor Rolf Spice Bomb",
-    "kategori": "Odunsu, Baharatlı, Tütün",
-    "notalar": ["Tarçın", "Tütün", "Pembe Biber", "Deri", "Safran", "Bergamot"]
+    "orijinal_ad": "Viktor&Rolf Spicebomb",
+    "kategori": "Oryantal, Baharatlı",
+    "notalar": ["Bergamot", "Greyfurt", "Tarçın", "Pembe Biber", "Lavanta", "Elemi", "Vetiver", "Tütün", "Deri"]
   },
   {
     "kod": "310",
-    "orijinal_ad": "Paco Rabane One Million Lucky Man",
-    "kategori": "Odunsu, Gurme, Meyveli",
-    "notalar": ["Fındık", "Bal", "Erik", "Sedir Ağacı", "Kaşmir", "Greyfurt", "Amberwood"]
+    "orijinal_ad": "Paco Rabanne 1 Million Lucky",
+    "kategori": "Odunsu, Taze, Tatlı",
+    "notalar": ["Ozonik Notalar", "Erik", "Bergamot", "Greyfurt", "Portakal Çiçeği", "Bal", "Yasemin", "Kaşmir Ahşap", "Sedir", "Fındık", "Amber Ahşap", "Vetiver", "Paçuli", "Meşe Yosunu"]
   },
   {
     "kod": "313",
     "orijinal_ad": "Jean Paul Gaultier Scandal",
-    "kategori": "Şipre, Çiçeksi, Gurme",
-    "notalar": ["Bal", "Gardenya", "Kan Portakalı", "Paçuli", "Karamel", "Yasemin"]
+    "kategori": "Şipre, Çiçeksi, Bal",
+    "notalar": ["Mandalina", "Kan Portakalı", "Şeftali", "Portakal Çiçeği", "Yasemin", "Gardenya", "Bal", "Meyankökü", "Karamel", "Balmumu", "Paçuli"]
   },
   {
     "kod": "314",
     "orijinal_ad": "Giorgio Armani My Way",
-    "kategori": "Çiçeksi, Beyaz Çiçek",
-    "notalar": ["Sümbülteber", "Portakal Çiçeği", "Bergamot", "Vanilya", "Beyaz Misk", "Sedir"]
+    "kategori": "Çiçeksi, Odunsu",
+    "notalar": ["Sümbülteber", "Yasemin", "Bergamot", "Portakal Çiçeği", "Vanilya", "Beyaz Misk", "Sedir Ağacı"]
   },
   {
     "kod": "315",
     "orijinal_ad": "Roberto Cavalli Eau de Parfum",
-    "kategori": "Amber, Çiçeksi, Tatlı",
-    "notalar": ["Portakal Çiçeği", "Vanilya", "Benzoin", "Tonka Fasulyesi", "Pembe Biber"]
+    "kategori": "Amber, Çiçeksi, Baharatlı",
+    "notalar": ["Pembe Biber", "Yeşil Mandalina", "Portakal Çiçeği Özü", "Mirabelle Eriği", "Kavrulmuş Tonka Tanesi", "Laos Benzoini"]
+  },
+  {
+    "kod": "316",
+    "orijinal_ad": "Givenchy Very Irrésistible",
+    "kategori": "Çiçeksi, Gül, Aromatik",
+    "notalar": ["Anason", "Verbena", "Gül", "Şakayık", "Vanilya", "Paçuli"]
   },
   {
     "kod": "317",
-    "orijinal_ad": "Hugo Boss Intens",
-    "kategori": "Odunsu, Baharatlı, Elma",
-    "notalar": ["Elma", "Tarçın", "Karanfil", "Sandal Ağacı", "Vanilya", "Bergamot", "Sedir"]
+    "orijinal_ad": "Hugo Boss Bottled Intense",
+    "kategori": "Odunsu, Baharatlı, Meyveli",
+    "notalar": ["Elma", "Portakal Çiçeği", "Tarçın", "Karanfil", "Sardunya", "Vanilya", "Sandal Ağacı", "Sedir Ağacı", "Güve Otu"]
+  },
+  {
+    "kod": "318",
+    "orijinal_ad": "Givenchy L'Interdit Parfum",
+    "kategori": "Beyaz Çiçek, Odunsu, Amber",
+    "notalar": ["Armut", "Sümbülteber", "Yasemin", "Portakal Çiçeği", "Vetiver", "Paçuli", "Vanilya"]
   },
   {
     "kod": "319",
     "orijinal_ad": "Versace Dylan Blue",
-    "kategori": "Çiçeksi, Meyveli, Taze",
-    "notalar": ["Granny Smith Elma", "Frenk Üzümü Sorbet", "Şakayık", "Gül", "Misk", "Paçuli"]
+    "kategori": "Akuatik, Aromatik, Odunsu",
+    "notalar": ["Kalabriyen Bergamot", "Greyfurt", "İncir Yaprağı", "Su Notaları", "Menekşe Yaprakları", "Kara Biber", "Papirus Odunu", "Ambrox", "Paçuli Özü", "Mineral Misk", "Tonka Fasulyesi", "Safran", "Projen Tütsüsü"]
   },
   {
     "kod": "321",
     "orijinal_ad": "Prada Paradoxe",
-    "kategori": "Amber, Çiçeksi, Beyaz Çiçek",
-    "notalar": ["Portakal Çiçeği", "Neroli", "Yasemin", "Amber", "Vanilya", "Misk", "Armut"]
+    "kategori": "Çiçeksi, Amber",
+    "notalar": ["Armut", "Neroli", "Bergamot", "Yosun", "Yasemin", "Neroli Özü", "Ambrofix", "Serenolide", "Amber", "Bourbon Vanilya", "Vanilya"]
   },
   {
     "kod": "323",
-    "orijinal_ad": "Cristian Dior Miss Dior Bloming Bouquet",
-    "kategori": "Çiçeksi, Taze, Gül",
-    "notalar": ["Şakayık", "Gül", "Beyaz Misk", "Bergamot", "Kayısı", "Şeftali"]
+    "orijinal_ad": "Christian Dior Miss Dior Blooming Bouquet",
+    "kategori": "Çiçeksi, Misk",
+    "notalar": ["Gül", "Şakayık", "Bergamot", "Beyaz Misk"]
   },
   {
     "kod": "326",
-    "orijinal_ad": "Giorgio Armani Gio Profumo",
-    "kategori": "Aromatik, Akuatik (Deniz), Baharatlı",
-    "notalar": ["Deniz Notaları", "Tütsü", "Bergamot", "Biberiye", "Adaçayı", "Paçuli"]
+    "orijinal_ad": "Giorgio Armani Acqua di Gio Profumo",
+    "kategori": "Aromatik, Akuatik, Tütsü",
+    "notalar": ["Sucul Notalar", "Bergamot", "Biberiye", "Adaçayı", "Sardunya", "Tütsü", "Paçuli"]
   },
   {
     "kod": "327",
     "orijinal_ad": "Jean Paul Gaultier Le Male Elixir",
-    "kategori": "Amber, Fougère, Aromatik",
-    "notalar": ["Vanilya", "Bal", "Tütün", "Tonka Fasulyesi", "Lavanta", "Nane", "Benzoin"]
+    "kategori": "Woody, Amber, Aromatik",
+    "notalar": ["Tonka Fasulyesi", "Lavanta", "Benzoin"]
   },
   {
     "kod": "328",
-    "orijinal_ad": "Yves Saint Laurent Myself Man",
-    "kategori": "Aromatik, Çiçeksi, Taze",
-    "notalar": ["Portakal Çiçeği", "Bergamot", "Ambrofix", "Paçuli"]
+    "orijinal_ad": "YSL Myself",
+    "kategori": "Odunsu, Çiçeksi",
+    "notalar": ["Kalabria Bergamotu", "Tunus Portakal Çiçeği", "Endonezya Paçulisi", "Ambrofix"]
+  },
+  {
+    "kod": "329",
+    "orijinal_ad": "Yves Saint Laurent Y Eau de Parfum",
+    "kategori": "Aromatik, Baharatlı, Taze",
+    "notalar": ["Zencefil", "Adaçayı", "Elma", "Lavanta", "Greyfurt", "Amberwood", "Tütsü"]
   },
   {
     "kod": "331",
-    "orijinal_ad": "DIOR SAUVAGE ELIXIR",
-    "kategori": "Aromatik, Baharatlı, Odunsu",
-    "notalar": ["Lavanta", "Tarçın", "Muskat", "Kakule", "Meyan Kökü", "Sandal Ağacı", "Amber"]
+    "orijinal_ad": "Dior Sauvage Elixir",
+    "kategori": "Baharatlı, Lavanta, Odunsu",
+    "notalar": ["Tarçın", "Muskat", "Kakule", "Greyfurt", "Lavanta", "Meyan Kökü", "Sandal Ağacı", "Kehribar", "Paçuli", "Haiti Vetiveri"]
   },
   {
     "kod": "332",
-    "orijinal_ad": "ARMANI STRONGER WITH YOU ABSOLUTELY",
-    "kategori": "Amber, Gurme, Baharatlı",
-    "notalar": ["Rom", "Kestane", "Vanilya", "Lavanta", "Paçuli", "Sedir"]
+    "orijinal_ad": "Armani Stronger With You Absolutely",
+    "kategori": "Amber, Baharatlı, Odunsu",
+    "notalar": ["Bergamot", "Amber", "Likör", "Meyveli Notalar", "Kestane", "Sedir Ağacı"]
   },
   {
     "kod": "335",
-    "orijinal_ad": "BURBERRY GODDESS",
-    "kategori": "Aromatik, Vanilya, Gurme",
-    "notalar": ["Vanilya", "Lavanta", "Kakao", "Zencefil", "Ginseng"]
+    "orijinal_ad": "Burberry Goddess",
+    "kategori": "Oryantal, Vanilya",
+    "notalar": ["Ahududu", "Lavanta", "Vanilya Çiçeği", "Süet", "Kakao", "Zencefil", "Vanilyalı Havyar"]
   },
   {
     "kod": "336",
-    "orijinal_ad": "CAROLINA HERRERA GOOD GIRL BLUSH",
-    "kategori": "Şipre, Çiçeksi, Taze",
-    "notalar": ["Şakayık", "Gül Suyu", "Vanilya", "Bergamot", "Ylang-Ylang", "Acı Badem"]
+    "orijinal_ad": "Carolina Herrera Good Girl Blush",
+    "kategori": "Çiçeksi, Amber, Vanilya",
+    "notalar": ["Bergamot", "Ylang Ylang", "Portakal Çiçeği", "Şakayık", "Gardenya", "Gül Suyu", "Tonka Fasulyesi", "Amber", "Vanilya"]
   },
   {
     "kod": "338",
-    "orijinal_ad": "AZZARO THE MOST WANTED",
-    "kategori": "Amber, Baharatlı, Gurme",
-    "notalar": ["Karamel (Toffee)", "Kakule", "Amberwood", "Odunsu Notalar"]
+    "orijinal_ad": "Azzaro The Most Wanted Parfum",
+    "kategori": "Baharatlı, Odunsu, Citrus",
+    "notalar": ["Zencefil", "Odunsu Notalar", "Vanilya"]
+  },
+  {
+    "kod": "340",
+    "orijinal_ad": "Valentino Uomo Born in Roma Intense",
+    "kategori": "Amber, Vanilya, Aromatik",
+    "notalar": ["Vanilya", "Vetiver", "Adaçayı", "Lavanta"]
+  },
+  {
+    "kod": "342",
+    "orijinal_ad": "Jean Paul Gaultier La Belle",
+    "kategori": "Oryantal, Vanilya, Meyveli",
+    "notalar": ["Armut", "Bergamot", "Vanilya Orkidesi", "Tonka Fasulyesi", "Vetiver", "Amber"]
+  },
+  {
+    "kod": "343",
+    "orijinal_ad": "Jean Paul Gaultier Divine",
+    "kategori": "Çiçeksi, Misk, Aquatik",
+    "notalar": ["Calypsone", "Kırmızı Meyveler", "Bergamot", "Zambak", "Yasemin", "Ylang-Ylang", "Beze", "Misk", "Paçuli"]
+  },
+  {
+    "kod": "345",
+    "orijinal_ad": "Victoria's Secret Tease",
+    "kategori": "Meyveli, Çiçeksi, Tatlı",
+    "notalar": ["Armut", "Mandalina", "Liçi", "Kırmızı Elma", "Gardenya", "Bezelye", "Yasemin", "Frezya", "Manolya", "Vanilya", "Benzoin", "Misk", "Pralin", "Kehribar", "Sandal Ağacı"]
+  },
+  {
+    "kod": "346",
+    "orijinal_ad": "YSL Libre Intense",
+    "kategori": "Amber, Fougère, Vanilya",
+    "notalar": ["Lavanta", "Vanilya", "Orkide", "Tonka Fasulyesi", "Amber", "Vetiver"]
   }
 ]
 """
@@ -605,113 +755,4 @@ def nota_ile_parfum_bul(arama_terimi, db):
     sonuclar = []
     arama_terimi = arama_terimi.lower()
     for parfum in db:
-        tum_notalar_ve_kategoriler = parfum['kategori'].lower() + " " + " ".join(parfum['notalar']).lower()
-        if arama_terimi in tum_notalar_ve_kategoriler:
-            sonuclar.append(parfum)
-    return sonuclar
-
-# Fonksiyon: Benzerlik motorunu hazırla ve çalıştır
-# Streamlit'in önbellekleme (cache) özelliğini kullanıyoruz.
-# Bu sayede 76 parfümün benzerlik hesabı her tıklamada değil, sadece 1 kez yapılır.
-@st.cache_resource
-def benzerlik_motorunu_hazirla(db):
-    dokumanlar = [" ".join(p['notalar']) for p in db]
-    vectorizer = CountVectorizer()
-    notalar_matrix = vectorizer.fit_transform(dokumanlar)
-    benzerlik_skorlari = cosine_similarity(notalar_matrix)
-    return benzerlik_skorlari
-
-# Motoru çalıştır
-benzerlik_skor_matrisi = benzerlik_motorunu_hazirla(veritabani)
-
-# Fonksiyon: Benzerlik önermesi (Hem kod hem isimle)
-def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
-    kod_veya_ad_lower = kod_veya_ad.lower().strip()
-    bulunan_index = -1
-    bulunan_parfum = None
-
-    for i, parfum in enumerate(db):
-        if parfum['kod'].lower() == kod_veya_ad_lower:
-            bulunan_index = i
-            bulunan_parfum = parfum
-            break
-    
-    if bulunan_index == -1:
-        for i, parfum in enumerate(db):
-            if kod_veya_ad_lower in parfum['orijinal_ad'].lower():
-                bulunan_index = i
-                bulunan_parfum = parfum
-                break
-                
-    if bulunan_index == -1:
-        return None, [] # Hiçbir şey bulunamadıysa
-
-    # Benzerlik skorlarını al
-    skorlar = list(enumerate(skor_matrisi[bulunan_index]))
-    skorlar = sorted(skorlar, key=lambda x: x[1], reverse=True)
-    
-    # Kendisi hariç (skorlar[1:]) en benzer 'top_n' taneyi al
-    en_benzer_indexler = [i[0] for i in skorlar[1:top_n+1]]
-    
-    benzer_parfumler = [db[i] for i in en_benzer_indexler]
-    return bulunan_parfum, benzer_parfumler # Baz alınan parfümü ve önerileri döndür
-
-# --- ADIM 3: ARAYÜZÜ (WEB SİTESİ) OLUŞTURMA ---
-
-# Sayfa Başlığı
-st.set_page_config(page_title="Lorinna Parfüm Danışmanı", layout="wide")
-st.title("🤖 Lorinna Yapay Zeka Parfüm Danışmanı (v1.2)")
-st.write(f"Şu anda veritabanında **{len(veritabani)}** adet parfüm yüklü.")
-
-# Arayüzü iki sütuna böl
-col1, col2 = st.columns(2)
-
-# --- SÜTUN 1: NOTA VEYA KATEGORİYE GÖRE ARAMA ---
-with col1:
-    st.header("1. Nota veya Kategoriye Göre Bul")
-    st.write("Müşterinin istediği bir nota veya koku tipini yazın (Örn: 'çiçeksi', 'vanilya', 'pudralı', 'ananas')")
-    
-    # Metin giriş kutusu
-    nota_terimi = st.text_input("Aranacak Nota veya Kategori:", key="nota_arama")
-    
-    # Arama butonu
-    if st.button("Parfümleri Bul", key="nota_buton"):
-        if nota_terimi:
-            sonuclar = nota_ile_parfum_bul(nota_terimi, veritabani)
-            if not sonuclar:
-                st.warning(f"'{nota_terimi}' içeren parfüm bulunamadı.")
-            else:
-                st.success(f"'{nota_terimi}' içeren {len(sonuclar)} adet parfüm bulundu:")
-                # Sonuçları güzel bir şekilde göster
-                for p in sonuclar:
-                    st.markdown(f"**{p['kod']} - {p['orijinal_ad']}** (Kategori: *{p['kategori']}*)")
-        else:
-            st.error("Lütfen aranacak bir terim girin.")
-
-# --- SÜTUN 2: BENZER KOKU ÖNERİSİ ---
-with col2:
-    st.header("2. Benzer Koku Öner")
-    st.write("Müşterinin beğendiği bir parfümün kodunu veya adını yazın (Örn: 'Aventus' veya '049')")
-    
-    # Metin giriş kutusu
-    isim_terimi = st.text_input("Beğenilen Parfümün Kodu veya Adı:", key="isim_arama")
-    
-    # Arama butonu
-    if st.button("Benzer Öneriler Getir", key="isim_buton"):
-        if isim_terimi:
-            baz_parfum, benzer_oneriler = benzer_parfumleri_getir(isim_terimi, veritabani, benzerlik_skor_matrisi, top_n=3)
-            
-            if baz_parfum:
-                st.success(f"Baz Alınan Parfüm: **{baz_parfum['kod']} - {baz_parfum['orijinal_ad']}**")
-                st.write(f"Bu parfüme en çok benzeyen ilk 3 öneri:")
-                
-                # Sonuçları güzel bir şekilde göster
-                for p in benzer_oneriler:
-                    st.markdown(f"**{p['kod']} - {p['orijinal_ad']}**")
-                    st.caption(f"Öne çıkan ortak notalar: {', '.join(p['notalar'][:4])}...")
-            else:
-                st.warning(f"'{isim_terimi}' kodlu veya isimli parfüm bulunamadı.")
-        else:
-            st.error("Lütfen aranacak bir parfüm girin.")
-
-# --- KODUN SONU ---
+        tum_notalar_ve_kategoriler = parfum['kategori'].
