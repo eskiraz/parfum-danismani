@@ -4,7 +4,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 import json
 import os 
 
-# --- ADIM 1: VERİTABANI (Barkod Alanları Kaldırıldı) ---
+# --- ADIM 1: VERİTABANI ---
+# Barkod alanları v3.6'da kaldırıldı.
 parfum_veritabani_json = """
 [
   {
@@ -493,7 +494,7 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Çiçeksi, Meyveli",
-    "notalar": ["Nar", "Siyah Orkide", "Lotus Çiçeği", "Amber", "Misk", "Paçuli", "Maun"]
+    "notalar": ["Nar", "Siyah Orkidesi", "Lotus Çiçeği", "Amber", "Misk", "Paçuli", "Maun"]
   },
   {
     "kod": "249",
@@ -1057,8 +1058,8 @@ def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
     benzer_parfumler = [db[i] for i in en_benzer_indexler]
     return bulunan_parfum, benzer_parfumler
 
-# Fonksiyon: Tek bir sütunda sıkıştırılmış parfüm detaylarını gösterir (v3.6)
-def kucuk_parfum_detaylarini_goster(p, title_type="Öneri"):
+# Fonksiyon: Tek bir sütunda sıkıştırılmış parfüm detaylarını gösterir
+def kucuk_parfum_detaylarini_goster(p, is_base=False):
     # Cinsiyete göre yerel dosya yolu seçimi
     resim_yolu_to_display = NICHE_YOLU 
     if p['cinsiyet'] == "Erkek":
@@ -1069,9 +1070,9 @@ def kucuk_parfum_detaylarini_goster(p, title_type="Öneri"):
     # Başlık
     st.markdown(f"**{p['kod']}** ({p['cinsiyet']})", unsafe_allow_html=True)
     
-    # Resim
+    # Resim (Küçük Boyut)
     if os.path.exists(resim_yolu_to_display):
-        st.image(resim_yolu_to_display, use_column_width=True)
+        st.image(resim_yolu_to_display, width=80) # Resim boyutu 80px olarak sabitlendi (3x3 gibi)
     else:
         st.caption("[Resim Yok]")
     
@@ -1080,91 +1081,95 @@ def kucuk_parfum_detaylarini_goster(p, title_type="Öneri"):
     
     # Notalar (Sıkıştırılmış)
     st.markdown(f"*{p['kategori'].replace(', ', ' / ')}*")
-    st.markdown(f"<p style='font-size:10px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'][:5])}...</p>", unsafe_allow_html=True)
+    
+    # Base parfümde tüm notaları, öneride ilk 5 notayı göster
+    if is_base:
+        st.markdown(f"<p style='font-size:10px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'])}</p>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<p style='font-size:10px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'][:5])}...</p>", unsafe_allow_html=True)
 
 
-# --- ADIM 3: ANA ARAYÜZ VE BİRLEŞİK ARAMA MANTIĞI (v3.6) ---
+# --- ADIM 3: ANA ARAYÜZ VE BİRLEŞİK ARAMA MANTIĞI (v3.7) ---
 
 st.set_page_config(page_title="Lorinna Koku Rehberi", layout="wide", page_icon="✨")
 
 # Dikey sıkıştırma için başlığı minimal tutma
-st.markdown("<h1 style='text-align: center; margin-bottom: 5px;'>✨ Lorinna Koku Rehberi</h1>", unsafe_allow_html=True)
-st.markdown(f"<p style='text-align: center; margin-bottom: 20px;'>Toplam {len(veritabani)} parfüm | Kod, İsim veya Nota ile arama yapın</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; margin-bottom: 0px; padding-top: 5px;'>✨ Lorinna Koku Rehberi</h1>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center; margin-top: 0px; margin-bottom: 20px;'>Toplam {len(veritabani)} parfüm | Kod, İsim veya Nota ile arama yapın</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Birleşik Arama Çubuğu (Ortalanmış)
-arama_terimi = st.text_input("Parfüm Kodu, Adı (Örn: Aventus, 008) veya Anahtar Kelime (Örn: vanilya, odunsu)", key="ana_arama")
 
-# Arama Butonu
-if st.button("Arama Yap", use_container_width=True):
-    if arama_terimi:
-        
-        # 1. Benzerlik/Kod Araması (Öncelikli Kontrol)
-        baz_parfum, benzer_oneriler = benzer_parfumleri_getir(arama_terimi, veritabani, benzerlik_skor_matrisi, top_n=3)
-        
-        if baz_parfum:
-            st.markdown("### 🏆 Benzer Koku Önerileri (Baz Parfüm Bulundu)")
+# Arama Çubuğu (Sol Çeyrek) ve Sonuçlar (Sağ Üç Çeyrek) için Ana Bölme
+col_search_area, col_results_area = st.columns([1, 3]) # 1:3 oranında bölme
+
+with col_search_area:
+    # Arama input'u ve butonu sol çeyrekte
+    arama_terimi = st.text_input("Parfüm Kodu, Adı veya Anahtar Kelime:", key="ana_arama")
+    
+    # Dikey Hizalama için bir miktar boşluk bırakalım
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    arama_baslat = st.button("Arama Yap", use_container_width=True)
+
+with col_results_area:
+    # Sonuçların görüneceği alan (Arama çubuğunun yanında)
+    
+    if arama_baslat:
+        if arama_terimi:
             
-            # Sonuçları tek satırda yan yana gösterme (1:3 oran)
-            col_baz, col_onerilen1, col_onerilen2, col_onerilen3 = st.columns([1.5, 1, 1, 1])
+            # 1. Benzerlik/Kod Araması (Öncelikli Kontrol)
+            baz_parfum, benzer_oneriler = benzer_parfumleri_getir(arama_terimi, veritabani, benzerlik_skor_matrisi, top_n=3)
             
-            # --- BAZ PARFÜM (SOL) ---
-            with col_baz:
-                st.markdown("<h4 style='color: green;'>Baz Alınan Parfüm</h4>", unsafe_allow_html=True)
+            if baz_parfum:
+                st.markdown("#### 🏆 Benzer Koku Önerileri")
                 
-                # Cinsiyete göre yerel dosya yolu seçimi
-                resim_yolu_baz = NICHE_YOLU 
-                if baz_parfum['cinsiyet'] == "Erkek":
-                    resim_yolu_baz = ERKEK_YOLU
-                elif baz_parfum['cinsiyet'] == "Kadın":
-                    resim_yolu_baz = KADIN_YOLU
+                # Benzerlik sonuçlarını yan yana dizme (1 Base + 3 Öneri = 4 sütun)
+                col_baz, col_onerilen1, col_onerilen2, col_onerilen3 = st.columns([1.5, 1, 1, 1])
                 
-                if os.path.exists(resim_yolu_baz):
-                    st.image(resim_yolu_baz, use_column_width=True, caption=baz_parfum['orijinal_ad'])
-                else:
-                    st.caption(f"[Resim bekleniyor: {resim_yolu_baz}]")
+                # --- BAZ PARFÜM (SOLDA) ---
+                with col_baz:
+                    st.markdown("##### Baz Alınan Parfüm", unsafe_allow_html=True)
+                    # Cinsiyete göre yerel dosya yolu seçimi
+                    resim_yolu_baz = NICHE_YOLU 
+                    if baz_parfum['cinsiyet'] == "Erkek":
+                        resim_yolu_baz = ERKEK_YOLU
+                    elif baz_parfum['cinsiyet'] == "Kadın":
+                        resim_yolu_baz = KADIN_YOLU
+                    
+                    if os.path.exists(resim_yolu_baz):
+                        st.image(resim_yolu_baz, width=120, caption=baz_parfum['orijinal_ad']) # Biraz daha büyük resim
+                    else:
+                        st.caption(f"[Resim Yok]")
 
-                st.markdown(f"**Kod:** {baz_parfum['kod']} ({baz_parfum['cinsiyet']})")
-                st.markdown(f"**Kategori:** *{baz_parfum['kategori']}*")
-                st.markdown(f"**Notalar:** {', '.join(baz_parfum['notalar'])}")
-                
-            # --- ÖNERİLEN PARFÜMLER (SAĞ) ---
-            st.markdown("<h4 style='text-align: center;'>➡️ En Yakın 3 Öneri</h4>", unsafe_allow_html=True)
+                    st.markdown(f"**Kod:** {baz_parfum['kod']} ({baz_parfum['cinsiyet']})")
+                    st.markdown(f"**Kategori:** *{baz_parfum['kategori']}*")
+                    st.markdown(f"<p style='font-size:12px; line-height: 1.1;'>**Notalar:** {', '.join(baz_parfum['notalar'])}</p>", unsafe_allow_html=True)
 
-            oneriler = [col_onerilen1, col_onerilen2, col_onerilen3]
-            for i, p in enumerate(benzer_oneriler):
-                with oneriler[i]:
-                    kucuk_parfum_detaylarini_goster(p)
-
-        else:
-            # 2. Nota/Anahtar Kelime Araması (Eğer Kod/İsim Bulunamazsa)
-            sonuclar = nota_ile_parfum_bul(arama_terimi, veritabani)
-            
-            if sonuclar:
-                st.success(f"🔍 '{arama_terimi}' anahtar kelimesini içeren **{len(sonuclar)}** adet parfüm bulundu:")
                 
-                # Sonuçları 4'lü sütunlarda listele
-                cols_list = st.columns(4)
-                for i, p in enumerate(sonuclar):
-                    with cols_list[i % 4]: # Her sütunda 4 ürün göster
-                        # Cinsiyete göre yerel dosya yolu seçimi
-                        resim_yolu_to_display = NICHE_YOLU 
-                        if p['cinsiyet'] == "Erkek":
-                            resim_yolu_to_display = ERKEK_YOLU
-                        elif p['cinsiyet'] == "Kadın":
-                            resim_yolu_to_display = KADIN_YOLU
-                        
-                        st.markdown(f"**{p['kod']}** ({p['cinsiyet']})", unsafe_allow_html=True)
-                        if os.path.exists(resim_yolu_to_display):
-                            st.image(resim_yolu_to_display, use_column_width=True, caption=p['orijinal_ad'])
-                        else:
-                            st.caption(f"[Resim Yok]")
-                        st.caption(f"*{p['kategori'].replace(', ', ' / ')}*")
-                        st.markdown(f"<p style='font-size:10px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'][:3])}...</p>", unsafe_allow_html=True)
+                # --- ÖNERİLEN PARFÜMLER (YAN YANA) ---
+                st.markdown("<p style='text-align: center;'><strong>➡️ En Yakın 3 Öneri</strong></p>", unsafe_allow_html=True)
+
+                oneriler = [col_onerilen1, col_onerilen2, col_onerilen3]
+                for i, p in enumerate(benzer_oneriler):
+                    with oneriler[i]:
+                        kucuk_parfum_detaylarini_goster(p)
 
             else:
-                st.warning(f"'{arama_terimi}' ile eşleşen hiçbir parfüm (kod, isim veya nota) bulunamadı.")
-    else:
-        st.error("Lütfen arama yapmak için bir terim girin.")
+                # 2. Nota/Anahtar Kelime Araması (Eğer Kod/İsim Bulunamazsa)
+                sonuclar = nota_ile_parfum_bul(arama_terimi, veritabani)
+                
+                if sonuclar:
+                    st.success(f"🔍 '{arama_terimi}' anahtar kelimesini içeren **{len(sonuclar)}** adet parfüm bulundu:")
+                    
+                    # Sonuçları 4'lü sütunlarda listele (Sağ alanda akıcı liste)
+                    cols_list = st.columns(4)
+                    for i, p in enumerate(sonuclar):
+                        with cols_list[i % 4]: # Her sütunda 4 ürün göster
+                            kucuk_parfum_detaylarini_goster(p)
+
+                else:
+                    st.warning(f"'{arama_terimi}' ile eşleşen hiçbir parfüm (kod, isim veya nota) bulunamadı.")
+        else:
+            st.error("Lütfen arama yapmak için bir terim girin.")
 
 # --- KODUN SONU ---
