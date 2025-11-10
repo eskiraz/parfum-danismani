@@ -1058,7 +1058,7 @@ def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
     benzer_parfumler = [db[i] for i in en_benzer_indexler]
     return bulunan_parfum, benzer_parfumler
 
-# Fonksiyon: Tek bir sütunda sıkıştırılmış parfüm detaylarını gösterir
+# Fonksiyon: Tek bir sütunda sıkıştırılmış parfüm detaylarını gösterir (FONT GÜNCELLEMESİ)
 def kucuk_parfum_detaylarini_goster(p, is_base=False):
     # Cinsiyete göre yerel dosya yolu seçimi
     resim_yolu_to_display = NICHE_YOLU 
@@ -1072,28 +1072,30 @@ def kucuk_parfum_detaylarini_goster(p, is_base=False):
     
     # Resim (Küçük Boyut)
     if os.path.exists(resim_yolu_to_display):
-        st.image(resim_yolu_to_display, width=80) # Resim boyutu 80px olarak sabitlendi (3x3 gibi)
+        st.image(resim_yolu_to_display, width=80) # Resim boyutu 80px olarak sabitlendi
     else:
         st.caption("[Resim Yok]")
     
     # Ad
     st.caption(f"**{p['orijinal_ad']}**")
     
-    # Notalar (Sıkıştırılmış)
+    # Kategori
     st.markdown(f"*{p['kategori'].replace(', ', ' / ')}*")
     
-    # Base parfümde tüm notaları, öneride ilk 5 notayı göster
+    # Notalar (FONT GÜNCELLEMESİ: 10px -> 11px)
     if is_base:
-        st.markdown(f"<p style='font-size:10px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'])}</p>", unsafe_allow_html=True)
+        # Base parfümde tüm notalar (13px)
+        st.markdown(f"<p style='font-size:13px; line-height: 1.1;'>**Notalar:** {', '.join(p['notalar'])}</p>", unsafe_allow_html=True)
     else:
-        st.markdown(f"<p style='font-size:10px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'][:5])}...</p>", unsafe_allow_html=True)
+        # Öneri/Anahtar kelime sonuçlarında ilk 5 notayı göster (11px)
+        st.markdown(f"<p style='font-size:11px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'][:5])}...</p>", unsafe_allow_html=True)
 
 
-# --- ADIM 3: ANA ARAYÜZ VE BİRLEŞİK ARAMA MANTIĞI (v3.7) ---
+# --- ADIM 3: ANA ARAYÜZ VE BİRLEŞİK ARAMA MANTIĞI (v3.8) ---
 
 st.set_page_config(page_title="Lorinna Koku Rehberi", layout="wide", page_icon="✨")
 
-# Dikey sıkıştırma için başlığı minimal tutma
+# Dikey sıkıştırma için başlığı minimal ve yukarıda tutma
 st.markdown("<h1 style='text-align: center; margin-bottom: 0px; padding-top: 5px;'>✨ Lorinna Koku Rehberi</h1>", unsafe_allow_html=True)
 st.markdown(f"<p style='text-align: center; margin-top: 0px; margin-bottom: 20px;'>Toplam {len(veritabani)} parfüm | Kod, İsim veya Nota ile arama yapın</p>", unsafe_allow_html=True)
 st.markdown("---")
@@ -1143,7 +1145,8 @@ with col_results_area:
 
                     st.markdown(f"**Kod:** {baz_parfum['kod']} ({baz_parfum['cinsiyet']})")
                     st.markdown(f"**Kategori:** *{baz_parfum['kategori']}*")
-                    st.markdown(f"<p style='font-size:12px; line-height: 1.1;'>**Notalar:** {', '.join(baz_parfum['notalar'])}</p>", unsafe_allow_html=True)
+                    # Notalar (13px)
+                    st.markdown(f"<p style='font-size:13px; line-height: 1.1;'>**Notalar:** {', '.join(baz_parfum['notalar'])}</p>", unsafe_allow_html=True)
 
                 
                 # --- ÖNERİLEN PARFÜMLER (YAN YANA) ---
