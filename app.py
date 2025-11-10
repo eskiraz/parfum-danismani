@@ -3,7 +3,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
 
-# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (v1.6 - CİNSİYET EKLENDİ, 122 PARFÜM) ---
+# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (v1.7 - STOKTAKİ 122 PARFÜM) ---
+# Veritabanı (JSON) v1.6 ile aynıdır, değiştirilmedi.
 parfum_veritabani_json = """
 [
   {
@@ -903,7 +904,7 @@ def benzerlik_motorunu_hazirla(db):
 # Motoru çalıştır
 benzerlik_skor_matrisi = benzerlik_motorunu_hazirla(veritabani)
 
-# Fonksiyon: Benzerlik önermesi (Hem kod hem isimle) - (v1.6 - 'ceed' HATASI DÜZELTİLDİ)
+# Fonksiyon: Benzerlik önermesi (Hem kod hem isimle) - (v1.6 - Test Edildi)
 def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
     kod_veya_ad_lower = kod_veya_ad.lower().strip()
     bulunan_index = -1
@@ -916,7 +917,7 @@ def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
             bulunan_parfum = parfum
             break
     
-    # 2. Kriter: Eğer kodla bulunamazsa, İSİM içinde arar (örn: "ceed" veya "aventus")
+    # 2. Kriter: Eğer kodla bulunamazsa, İSİM içinde arar (örn: "aventus" veya "baccarat")
     if bulunan_index == -1:
         for i, parfum in enumerate(db):
             if kod_veya_ad_lower in parfum['orijinal_ad'].lower():
@@ -937,12 +938,15 @@ def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
     benzer_parfumler = [db[i] for i in en_benzer_indexler]
     return bulunan_parfum, benzer_parfumler
 
-# --- ADIM 3: ARAYÜZÜ (WEB SİTESİ) OLUŞTURMA (v1.6) ---
+# --- ADIM 3: ARAYÜZÜ (WEB SİTESİ) OLUŞTURMA (v1.7) ---
 
-# Sayfa Başlığı
-st.set_page_config(page_title="Lorinna Parfüm Danışmanı", layout="wide")
-st.title("🤖 Lorinna Yapay Zeka Parfüm Danışmanı (v1.6)")
-st.write(f"Şu anda veritabanında **{len(veritabani)}** adet parfüm yüklü.")
+# Sayfa Başlığı ve Sekme İkonu (YENİ)
+st.set_page_config(page_title="Lorinna Koku Rehberi", layout="wide", page_icon="✨")
+
+# Ana Başlık (YENİ)
+st.title("✨ Lorinna Koku Rehberi (v1.7)")
+st.write(f"Stoktaki **{len(veritabani)}** adet parfüm arasından mükemmel kokuyu bulun.")
+st.markdown("---") # Renk katmak için ayraç
 
 # Arayüzü iki sütuna böl
 col1, col2 = st.columns(2)
@@ -974,7 +978,7 @@ with col1:
 # --- SÜTUN 2: BENZER KOKU ÖNERİSİ ---
 with col2:
     st.header("2. Benzer Koku Öner")
-    st.write("Parfümün kodunu veya adının bir kısmını yazın (Örn: 'ceed', 'aventus', '008')")
+    st.write("Parfümün kodunu veya adının bir kısmını yazın (Örn: 'aventus', 'baccarat', '008')")
     
     # Metin giriş kutusu
     isim_terimi = st.text_input("Beğenilen Parfümün Kodu veya Adı:", key="isim_arama")
