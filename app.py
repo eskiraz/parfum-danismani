@@ -2,10 +2,10 @@ import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
-import os # Resimlerin varlığını kontrol etmek için
+import os 
 
-# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (v3.2) ---
-# JSON veritabanı içeriği nötr placeholder ile temizlendi ve TAMAMLANDI.
+# --- ADIM 1: "YAPAY ZEKA"NIN BEYNİ (v3.5) ---
+# JSON veritabanında tüm 'barkod' alanları BOŞ bırakıldı 
 parfum_veritabani_json = """
 [
   {
@@ -14,7 +14,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Baharatlı, Odunsu, Taze",
-    "notalar": ["Pembe Biber", "Sardunya", "Elemi", "Muskat", "Tütsü", "Güve Otu", "Sedir", "Misk", "Tonka Fasulyesi", "Paçuli"]
+    "notalar": ["Pembe Biber", "Sardunya", "Elemi", "Muskat", "Tütsü", "Güve Otu", "Sedir", "Misk", "Tonka Fasulyesi", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "008",
@@ -22,7 +23,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Şipre, Meyveli, Taze",
-    "notalar": ["Ananas", "Huş Ağacı", "Bergamot", "Siyah Frenk Üzümü", "Meşe Yosunu", "Misk", "Ambergris"]
+    "notalar": ["Ananas", "Huş Ağacı", "Bergamot", "Siyah Frenk Üzümü", "Meşe Yosunu", "Misk", "Ambergris"],
+    "barkod": ""
   },
   {
     "kod": "010",
@@ -30,7 +32,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Meyveli",
-    "notalar": ["Liçi", "Şakayık", "Şeftali", "Portakal Çiçeği", "Misk", "Yasemin"]
+    "notalar": ["Liçi", "Şakayık", "Şeftali", "Portakal Çiçeği", "Misk", "Yasemin"],
+    "barkod": ""
   },
   {
     "kod": "012",
@@ -38,7 +41,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Amber, Baharatlı",
-    "notalar": ["Gül", "Karanfil", "Ahududu", "Siyah Frenk Üzümü", "Tarçın", "Paçuli", "Tütsü", "Sandal Ağacı", "Misk", "Amber", "Benzoin"]
+    "notalar": ["Gül", "Karanfil", "Ahududu", "Siyah Frenk Üzümü", "Tarçın", "Paçuli", "Tütsü", "Sandal Ağacı", "Misk", "Amber", "Benzoin"],
+    "barkod": ""
   },
   {
     "kod": "013",
@@ -46,7 +50,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Odunsu, Amber",
-    "notalar": ["Safran", "Yasemin", "Amberwood", "Ambergris", "Reçine", "Sedir"]
+    "notalar": ["Safran", "Yasemin", "Amberwood", "Ambergris", "Reçine", "Sedir"],
+    "barkod": ""
   },
   {
     "kod": "021",
@@ -54,7 +59,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Tütsü, Baharatlı",
-    "notalar": ["Kenevir", "Yeşil Notalar", "Reçine", "Odunsu Notalar", "Tütün", "Kahve", "Ud", "Tütsü"]
+    "notalar": ["Kenevir", "Yeşil Notalar", "Reçine", "Odunsu Notalar", "Tütün", "Kahve", "Ud", "Tütsü"],
+    "barkod": ""
   },
   {
     "kod": "024",
@@ -62,7 +68,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Çiçeksi, Gurme",
-    "notalar": ["Yasemin", "Gardenya", "Ylang Ylang", "Bergamot", "Frenk Üzümü", "Yumru", "Baharat", "Meyveli Notalar", "Orkide", "Vetiver", "Sandal Ağacı", "Paçuli", "Amber", "Tütsü", "Vanilya", "Çikolata"]
+    "notalar": ["Yasemin", "Gardenya", "Ylang Ylang", "Bergamot", "Frenk Üzümü", "Yumru", "Baharat", "Meyveli Notalar", "Orkide", "Vetiver", "Sandal Ağacı", "Paçuli", "Amber", "Tütsü", "Vanilya", "Çikolata"],
+    "barkod": ""
   },
   {
     "kod": "027",
@@ -70,7 +77,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Narenciye, Meyveli, Misk",
-    "notalar": ["Sicilya Portakalı", "Calabria Bergamotu", "Sicilya Limonu", "Tropikal Meyveler", "Beyaz Misk", "Amber", "Madagaskar Vanilyası"]
+    "notalar": ["Sicilya Portakalı", "Calabria Bergamotu", "Sicilya Limonu", "Tropikal Meyveler", "Beyaz Misk", "Amber", "Madagaskar Vanilyası"],
+    "barkod": ""
   },
   {
     "kod": "031",
@@ -78,7 +86,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Odunsu, Misk",
-    "notalar": ["Sümbülteber", "Agave", "Vanilya", "Portakal Çiçeği", "Sandal Ağacı", "Beyaz Misk"]
+    "notalar": ["Sümbülteber", "Agave", "Vanilya", "Portakal Çiçeği", "Sandal Ağacı", "Beyaz Misk"],
+    "barkod": ""
   },
   {
     "kod": "040",
@@ -86,7 +95,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Meyveli, Taze",
-    "notalar": ["Liçi", "Rhubarb", "Bergamot", "Muskat", "Türk Gülü", "Şakayık", "Vanilya", "Kaşmir", "Sedir", "Vetiver", "Tütsü", "Misk"]
+    "notalar": ["Liçi", "Rhubarb", "Bergamot", "Muskat", "Türk Gülü", "Şakayık", "Vanilya", "Kaşmir", "Sedir", "Vetiver", "Tütsü", "Misk"],
+    "barkod": ""
   },
   {
     "kod": "041",
@@ -94,7 +104,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Vanilya, Gurme",
-    "notalar": ["Yasemin", "Yumuşak Vanilya", "Kestane", "Sandal Ağacı"]
+    "notalar": ["Yasemin", "Yumuşak Vanilya", "Kestane", "Sandal Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "045",
@@ -102,7 +113,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Ud, Amber, Oryantal",
-    "notalar": ["Armut", "Ahududu", "Safran", "Bulgar Gülü", "Portakal Çiçeği", "Doğal Ud", "Paçuli"]
+    "notalar": ["Armut", "Ahududu", "Safran", "Bulgar Gülü", "Portakal Çiçeği", "Doğal Ud", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "049",
@@ -110,7 +122,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Gurme, Narenciyeli",
-    "notalar": ["Karamel", "Vanilya", "Kan Portakalı", "Tarçın", "Lavanta", "Meyan Kökü"]
+    "notalar": ["Karamel", "Vanilya", "Kan Portakalı", "Tarçın", "Lavanta", "Meyan Kökü"],
+    "barkod": ""
   },
   {
     "kod": "052",
@@ -118,7 +131,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Gurme, Meyveli",
-    "notalar": ["Vişne", "Acı Badem", "Likör", "Tonka Fasulyesi", "Vanilya", "Gül", "Yasemin"]
+    "notalar": ["Vişne", "Acı Badem", "Likör", "Tonka Fasulyesi", "Vanilya", "Gül", "Yasemin"],
+    "barkod": ""
   },
   {
     "kod": "055",
@@ -126,7 +140,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Odunsu, Baharatlı",
-    "notalar": ["Ud", "Meyvemsi Notalar", "Amber", "Güve Otu", "Olibanum"]
+    "notalar": ["Ud", "Meyvemsi Notalar", "Amber", "Güve Otu", "Olibanum"],
+    "barkod": ""
   },
   {
     "kod": "068",
@@ -134,7 +149,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Baharatlı, Odunsu",
-    "notalar": ["Kakule", "Muskat", "Safran", "Mandalina", "Neroli", "Gül", "Yasemin", "Damla Sakızı", "Vanilya", "Amber", "Odunsu Notalar", "Sandal Ağacı"]
+    "notalar": ["Kakule", "Muskat", "Safran", "Mandalina", "Neroli", "Gül", "Yasemin", "Damla Sakızı", "Vanilya", "Amber", "Odunsu Notalar", "Sandal Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "078",
@@ -142,7 +158,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Odunsu, Baharatlı",
-    "notalar": ["Safran", "Acı Badem", "Mısır Yasemini", "Sedir", "Ambergris", "Misk"]
+    "notalar": ["Safran", "Acı Badem", "Mısır Yasemini", "Sedir", "Ambergris", "Misk"],
+    "barkod": ""
   },
   {
     "kod": "079",
@@ -150,7 +167,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Aromatik, Akuatik (Deniz), Misk",
-    "notalar": ["Bergamot", "Limon", "Yosun", "Calone", "Hedione", "Ambrox", "Sedir", "Misk"]
+    "notalar": ["Bergamot", "Limon", "Yosun", "Calone", "Hedione", "Ambrox", "Sedir", "Misk"],
+    "barkod": ""
   },
   {
     "kod": "080",
@@ -158,7 +176,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Baharatlı, Mineral",
-    "notalar": ["Mineral Notalar", "Safran", "Menekşe Yaprağı", "Mandalina", "Ölümsüz Otu"]
+    "notalar": ["Mineral Notalar", "Safran", "Menekşe Yaprağı", "Mandalina", "Ölümsüz Otu"],
+    "barkod": ""
   },
   {
     "kod": "085",
@@ -166,7 +185,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Baharatlı, Oryantal",
-    "notalar": ["Ud", "Safran", "Muskat", "Lavanta", "Paçuli"]
+    "notalar": ["Ud", "Safran", "Muskat", "Lavanta", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "091",
@@ -174,7 +194,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Şipre, Meyveli",
-    "notalar": ["Ananas", "Greyfurt", "Meşe Yosunu", "Bergamot", "Odunsu Notalar", "Paçuli"]
+    "notalar": ["Ananas", "Greyfurt", "Meşe Yosunu", "Bergamot", "Odunsu Notalar", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "092",
@@ -182,7 +203,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Deri, Odunsu",
-    "notalar": ["Deri", "Kakule", "Yasemin", "Amber", "Paçuli", "Yosun"]
+    "notalar": ["Deri", "Kakule", "Yasemin", "Amber", "Paçuli", "Yosun"],
+    "barkod": ""
   },
   {
     "kod": "099",
@@ -190,7 +212,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Gül, Oud, Misk",
-    "notalar": ["Gül", "Papatya", "Bergamot", "Hedione", "Guaiac Ağacı", "Oud", "Papirüs"]
+    "notalar": ["Gül", "Papatya", "Bergamot", "Hedione", "Guaiac Ağacı", "Oud", "Papirüs"],
+    "barkod": ""
   },
   {
     "kod": "102",
@@ -198,7 +221,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Gurme, Vanilya, Çiçeksi",
-    "notalar": ["Beyaz Çikolata", "Vanilya", "Badem", "Şeftali", "Fındık", "Orkide"]
+    "notalar": ["Beyaz Çikolata", "Vanilya", "Badem", "Şeftali", "Fındık", "Orkide"],
+    "barkod": ""
   },
   {
     "kod": "106",
@@ -206,7 +230,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Meyveli, Çiçeksi, Misk",
-    "notalar": ["Kiraz", "Zencefil", "Yasemin Sambac", "Ambrette", "Pembe Biber", "Misk", "Odunsu Notalar"]
+    "notalar": ["Kiraz", "Zencefil", "Yasemin Sambac", "Ambrette", "Pembe Biber", "Misk", "Odunsu Notalar"],
+    "barkod": ""
   },
   {
     "kod": "114",
@@ -214,7 +239,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Misk, Odunsu, Çiçeksi",
-    "notalar": ["Bergamot", "Greyfurt", "Sedir Ağacı", "Gül", "Paçuli", "Sandal Ağacı", "Vanilya", "Amber", "Ambergris"]
+    "notalar": ["Bergamot", "Greyfurt", "Sedir Ağacı", "Gül", "Paçuli", "Sandal Ağacı", "Vanilya", "Amber", "Ambergris"],
+    "barkod": ""
   },
   {
     "kod": "116",
@@ -222,7 +248,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Vanilya, Gurme",
-    "notalar": ["Badem", "Yasemin", "Portakal Çiçeği", "Vanilya", "Sandal Ağacı", "Amber"]
+    "notalar": ["Badem", "Yasemin", "Portakal Çiçeği", "Vanilya", "Sandal Ağacı", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "117",
@@ -230,7 +257,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Gurme, Amber, Baharatlı",
-    "notalar": ["Konyak", "Tarçın", "Tonka Fasulyesi", "Meşe", "Pralin", "Vanilya", "Sandal Ağacı"]
+    "notalar": ["Konyak", "Tarçın", "Tonka Fasulyesi", "Meşe", "Pralin", "Vanilya", "Sandal Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "120",
@@ -238,7 +266,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Odunsu",
-    "notalar": ["Lime", "Katırtırnağı", "Yasemin", "Vetiver", "Kediotu", "Sedir Ağacı", "Ambroxan"]
+    "notalar": ["Lime", "Katırtırnağı", "Yasemin", "Vetiver", "Kediotu", "Sedir Ağacı", "Ambroxan"],
+    "barkod": ""
   },
   {
     "kod": "122",
@@ -246,7 +275,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Oryantal, Çiçeksi, Baharatlı",
-    "notalar": ["Elma", "Bergamot", "Lavanta", "Yasemin", "Menekşe", "Gülhatmi", "Vanilya", "Biber", "Guaiac Ağacı", "Paçuli"]
+    "notalar": ["Elma", "Bergamot", "Lavanta", "Yasemin", "Menekşe", "Gülhatmi", "Vanilya", "Biber", "Guaiac Ağacı", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "123",
@@ -254,7 +284,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Oryantal, Odunsu, Tonka",
-    "notalar": ["Safran", "Bergamot", "Ud", "Bulgar Gülü", "Tonka Fasulyesi", "Şeker Kamışı", "Amber", "Beyaz Misk", "Meşe Yosunu"]
+    "notalar": ["Safran", "Bergamot", "Ud", "Bulgar Gülü", "Tonka Fasulyesi", "Şeker Kamışı", "Amber", "Beyaz Misk", "Meşe Yosunu"],
+    "barkod": ""
   },
   {
     "kod": "124",
@@ -262,7 +293,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Narenciye, Amber, Çay",
-    "notalar": ["Ağaç Kavunu", "Bergamot", "Portakal", "Zencefil", "Neroli", "Tarçın", "Siyah Çay", "Ambroksan", "Olibanum", "Guaiac Ağacı"]
+    "notalar": ["Ağaç Kavunu", "Bergamot", "Portakal", "Zencefil", "Neroli", "Tarçın", "Siyah Çay", "Ambroksan", "Olibanum", "Guaiac Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "125",
@@ -270,7 +302,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Baharatlı, Gourmand",
-    "notalar": ["Armut", "Fındık Sütü", "Safran", "Gül", "Yasemin", "Osmanthus", "Sandal Ağacı", "Vanilya", "Deri", "Tütsü", "Ambergris"]
+    "notalar": ["Armut", "Fındık Sütü", "Safran", "Gül", "Yasemin", "Osmanthus", "Sandal Ağacı", "Vanilya", "Deri", "Tütsü", "Ambergris"],
+    "barkod": ""
   },
   {
     "kod": "127",
@@ -278,7 +311,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Unisex",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Vanilya",
-    "notalar": ["Vanilya", "Yasemin", "Orkide", "Esmer Şeker", "Tonka Fasulyesi", "Amber", "Misk", "Paçuli"]
+    "notalar": ["Vanilya", "Yasemin", "Orkide", "Esmer Şeker", "Tonka Fasulyesi", "Amber", "Misk", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "128",
@@ -286,7 +320,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Vanilya, Baharatlı, Odunsu",
-    "notalar": ["Portakal Çiçeği", "Bergamot", "Tarçın", "Bourbon Vanilya", "Elemi", "Guaiac Wood", "Ambrox", "Pralin", "Misk"]
+    "notalar": ["Portakal Çiçeği", "Bergamot", "Tarçın", "Bourbon Vanilya", "Elemi", "Guaiac Wood", "Ambrox", "Pralin", "Misk"],
+    "barkod": ""
   },
   {
     "kod": "134",
@@ -294,7 +329,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Akuatik, Aromatik, Narenciye",
-    "notalar": ["Greyfurt", "Zencefil", "Bergamot", "Su Notaları", "Adaçayı", "Biberiye", "Ambroxan", "Kehribar", "Labdanum"]
+    "notalar": ["Greyfurt", "Zencefil", "Bergamot", "Su Notaları", "Adaçayı", "Biberiye", "Ambroxan", "Kehribar", "Labdanum"],
+    "barkod": ""
   },
   {
     "kod": "202",
@@ -302,7 +338,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Oryantal, Baharatlı, Odunsu",
-    "notalar": ["Greyfurt", "Kişniş", "Fesleğen", "Zencefil", "Kakule", "Portakal Çiçeği", "Tütün", "Amber", "Sedir Ağacı"]
+    "notalar": ["Greyfurt", "Kişniş", "Fesleğen", "Zencefil", "Kakule", "Portakal Çiçeği", "Tütün", "Amber", "Sedir Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "206",
@@ -310,7 +347,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Taze, Çiçeksi, Meyveli",
-    "notalar": ["Elma", "Salatalık", "Greyfurt", "Manolya", "Gül", "Sandal Ağacı", "Beyaz Amber"]
+    "notalar": ["Elma", "Salatalık", "Greyfurt", "Manolya", "Gül", "Sandal Ağacı", "Beyaz Amber"],
+    "barkod": ""
   },
   {
     "kod": "207",
@@ -318,7 +356,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Aromatik, Akuatik (Deniz), Taze",
-    "notalar": ["Deniz Notaları", "Limon", "Bergamot", "Mandalina", "Yasemin", "Beyaz Misk", "Sedir"]
+    "notalar": ["Deniz Notaları", "Limon", "Bergamot", "Mandalina", "Yasemin", "Beyaz Misk", "Sedir"],
+    "barkod": ""
   },
   {
     "kod": "208",
@@ -326,7 +365,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Baharatlı, Odunsu",
-    "notalar": ["Tonka Fasulyesi", "Kakule", "Odunsu Notalar"]
+    "notalar": ["Tonka Fasulyesi", "Kakule", "Odunsu Notalar"],
+    "barkod": ""
   },
   {
     "kod": "209",
@@ -334,7 +374,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Şipre, Meyveli, Vanilya",
-    "notalar": ["Siyah Frenk Üzümü", "Gül", "Vanilya", "Paçuli", "Frezya", "Mandalina"]
+    "notalar": ["Siyah Frenk Üzümü", "Gül", "Vanilya", "Paçuli", "Frezya", "Mandalina"],
+    "barkod": ""
   },
   {
     "kod": "210",
@@ -342,7 +383,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Çiçeksi, Vanilya",
-    "notalar": ["Siyah Frenk Üzümü", "Gül", "Davana", "Vanilya", "Siyah Çay", "Paçuli"]
+    "notalar": ["Siyah Frenk Üzümü", "Gül", "Davana", "Vanilya", "Siyah Çay", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "211",
@@ -350,7 +392,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Oryantal",
-    "notalar": ["Zambak", "Yasemin", "Taze Zencefil", "Portakal Çiçeği", "Vanilya", "Sandal Ağacı"]
+    "notalar": ["Zambak", "Yasemin", "Taze Zencefil", "Portakal Çiçeği", "Vanilya", "Sandal Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "215",
@@ -358,7 +401,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Meyveli, Tatlı",
-    "notalar": ["Gardenya", "Armut Çiçeği", "Esmer Şeker", "Kırmızı Meyveler", "Paçuli", "Yasemin"]
+    "notalar": ["Gardenya", "Armut Çiçeği", "Esmer Şeker", "Kırmızı Meyveler", "Paçuli", "Yasemin"],
+    "barkod": ""
   },
   {
     "kod": "217",
@@ -366,7 +410,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Meyveli, Tatlı",
-    "notalar": ["Vişne", "Gül", "Badem", "Siyah Frenk Üzümü", "Misk", "Paçuli"]
+    "notalar": ["Vişne", "Gül", "Badem", "Siyah Frenk Üzümü", "Misk", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "218",
@@ -374,7 +419,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Baharatlı, Narenciye",
-    "notalar": ["Portakal", "Greyfurt", "Vetiver", "Biber", "Sedir", "Paçuli"]
+    "notalar": ["Portakal", "Greyfurt", "Vetiver", "Biber", "Sedir", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "222",
@@ -382,7 +428,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Aromatik, Taze",
-    "notalar": ["Greyfurt", "Kakule", "Sümbülteber", "Ylang-Ylang", "Süet", "Vetiver"]
+    "notalar": ["Greyfurt", "Kakule", "Sümbülteber", "Ylang-Ylang", "Süet", "Vetiver"],
+    "barkod": ""
   },
   {
     "kod": "224",
@@ -390,7 +437,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Odunsu, Pudralı",
-    "notalar": ["Frezya", "Karabiber", "Yasemin", "Süet", "Sedir Ağacı", "Heliotrop"]
+    "notalar": ["Frezya", "Karabiber", "Yasemin", "Süet", "Sedir Ağacı", "Heliotrop"],
+    "barkod": ""
   },
   {
     "kod": "225",
@@ -398,7 +446,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Gurme, Vanilya",
-    "notalar": ["Pralin", "Karamel", "Vanilya", "Orkide", "Gül", "Liçi", "Paçuli", "Kahve"]
+    "notalar": ["Pralin", "Karamel", "Vanilya", "Orkide", "Gül", "Liçi", "Paçuli", "Kahve"],
+    "barkod": ""
   },
   {
     "kod": "226",
@@ -406,7 +455,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Gurme, Tatlı",
-    "notalar": ["İris", "Pralin", "Vanilya", "Paçuli", "Portakal Çiçeği", "Siyah Frenk Üzümü"]
+    "notalar": ["İris", "Pralin", "Vanilya", "Paçuli", "Portakal Çiçeği", "Siyah Frenk Üzümü"],
+    "barkod": ""
   },
   {
     "kod": "229",
@@ -414,7 +464,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Odunsu, Narenciye",
-    "notalar": ["Greyfurt", "Portakal", "Limon", "Şeker Kamışı", "Misk", "Sedir", "Kırmızı Frenk Üzümü"]
+    "notalar": ["Greyfurt", "Portakal", "Limon", "Şeker Kamışı", "Misk", "Sedir", "Kırmızı Frenk Üzümü"],
+    "barkod": ""
   },
   {
     "kod": "231",
@@ -422,7 +473,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Akuatik (Deniz), Odunsu, Taze",
-    "notalar": ["Deniz Notaları", "Greyfurt", "Defne Yaprağı", "Ambergris", "Guaiac Ağacı", "Meşe Yosunu"]
+    "notalar": ["Deniz Notaları", "Greyfurt", "Defne Yaprağı", "Ambergris", "Guaiac Ağacı", "Meşe Yosunu"],
+    "barkod": ""
   },
   {
     "kod": "233",
@@ -430,7 +482,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Çiçeksi, Gurme",
-    "notalar": ["Tuzlu Vanilya", "Su Yasemini", "Mandalina", "Zambak", "Kaşmir Ağacı", "Ambergris"]
+    "notalar": ["Tuzlu Vanilya", "Su Yasemini", "Mandalina", "Zambak", "Kaşmir Ağacı", "Ambergris"],
+    "barkod": ""
   },
   {
     "kod": "234",
@@ -438,7 +491,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Meyveli, Tatlı",
-    "notalar": ["Bal", "Paçuli", "Portakal Çiçeği", "Ahududu", "Yasemin", "Amber"]
+    "notalar": ["Bal", "Paçuli", "Portakal Çiçeği", "Ahududu", "Yasemin", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "235",
@@ -446,7 +500,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Beyaz Çiçek, Amber",
-    "notalar": ["Yasemin", "Kaşmir", "Beyaz Amber", "Odunsu Notalar"]
+    "notalar": ["Yasemin", "Kaşmir", "Beyaz Amber", "Odunsu Notalar"],
+    "barkod": ""
   },
   {
     "kod": "238",
@@ -454,7 +509,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Aromatik, Fougère, Taze",
-    "notalar": ["Nane", "Yeşil Elma", "Limon", "Tonka Fasulyesi", "Vanilya", "Amber", "Sedir"]
+    "notalar": ["Nane", "Yeşil Elma", "Limon", "Tonka Fasulyesi", "Vanilya", "Amber", "Sedir"],
+    "barkod": ""
   },
   {
     "kod": "241",
@@ -462,7 +518,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Baharatlı, Çiçeksi, Amber",
-    "notalar": ["Kakule", "Karabiber", "Zencefil", "Gardenya", "Hindistan Cevizi", "Amber", "Misk"]
+    "notalar": ["Kakule", "Karabiber", "Zencefil", "Gardenya", "Hindistan Cevizi", "Amber", "Misk"],
+    "barkod": ""
   },
   {
     "kod": "242",
@@ -470,7 +527,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Gurme, Vanilya",
-    "notalar": ["Kahve", "Vanilya", "Portakal Çiçeği", "Armut", "Yasemin", "Misk", "Sedir"]
+    "notalar": ["Kahve", "Vanilya", "Portakal Çiçeği", "Armut", "Yasemin", "Misk", "Sedir"],
+    "barkod": ""
   },
   {
     "kod": "243",
@@ -478,7 +536,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Vanilya, Rom, Gurme",
-    "notalar": ["Rom", "Vanilya", "Çarkıfelek", "Tonka Fasulyesi", "Gardenya", "Misk"]
+    "notalar": ["Rom", "Vanilya", "Çarkıfelek", "Tonka Fasulyesi", "Gardenya", "Misk"],
+    "barkod": ""
   },
   {
     "kod": "246",
@@ -486,7 +545,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Akuatik (Deniz), Aromatik, Taze",
-    "notalar": ["Deniz Yosunu", "Mandalina", "Pamuk Çiçeği", "Sedir", "Amber"]
+    "notalar": ["Deniz Yosunu", "Mandalina", "Pamuk Çiçeği", "Sedir", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "248",
@@ -494,7 +554,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Çiçeksi, Meyveli",
-    "notalar": ["Nar", "Siyah Orkide", "Lotus Çiçeği", "Amber", "Misk", "Paçuli", "Maun"]
+    "notalar": ["Nar", "Siyah Orkide", "Lotus Çiçeği", "Amber", "Misk", "Paçuli", "Maun"],
+    "barkod": ""
   },
   {
     "kod": "249",
@@ -502,7 +563,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Çiçeksi, Tatlı",
-    "notalar": ["Pamuk Şekeri", "Pembe Biber", "Vanilya", "Misk", "Gardenya", "Sandal Ağacı", "Mandalina"]
+    "notalar": ["Pamuk Şekeri", "Pembe Biber", "Vanilya", "Misk", "Gardenya", "Sandal Ağacı", "Mandalina"],
+    "barkod": ""
   },
   {
     "kod": "251",
@@ -510,7 +572,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Oryantal, Çiçeksi, Tatlı",
-    "notalar": ["Gül", "Biber", "Bergamot", "Gardenya", "Sardunya", "Pamuk Şekeri", "Vanilya", "Baharat"]
+    "notalar": ["Gül", "Biber", "Bergamot", "Gardenya", "Sardunya", "Pamuk Şekeri", "Vanilya", "Baharat"],
+    "barkod": ""
   },
   {
     "kod": "253",
@@ -518,7 +581,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Aromatik, Odunsu, Amber",
-    "notalar": ["Limon", "Bergamot", "Nane", "Pelin Otu", "Lavanta", "Sardunya", "Ananas", "Sandal Ağacı", "Sedir", "Amberwood", "Tonka Fasulyesi"]
+    "notalar": ["Limon", "Bergamot", "Nane", "Pelin Otu", "Lavanta", "Sardunya", "Ananas", "Sandal Ağacı", "Sedir", "Amberwood", "Tonka Fasulyesi"],
+    "barkod": ""
   },
   {
     "kod": "255",
@@ -526,7 +590,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Meyveli",
-    "notalar": ["Ylang-Ylang", "Yasemin", "Gül", "Şeftali", "Armut", "Misk", "Sedir"]
+    "notalar": ["Ylang-Ylang", "Yasemin", "Gül", "Şeftali", "Armut", "Misk", "Sedir"],
+    "barkod": ""
   },
   {
     "kod": "256",
@@ -534,7 +599,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Çiçeksi, Vanilya",
-    "notalar": ["Vanilya", "Tonka Fasulyesi", "Yasemin", "Portakal Çiçeği", "Sandal Ağacı", "Bourbon Vanilyası"]
+    "notalar": ["Vanilya", "Tonka Fasulyesi", "Yasemin", "Portakal Çiçeği", "Sandal Ağacı", "Bourbon Vanilyası"],
+    "barkod": ""
   },
   {
     "kod": "260",
@@ -542,7 +608,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Çiçeksi, Misk",
-    "notalar": ["İris", "Lavanta", "Sedir", "Vetiver", "Kakao", "Amber"]
+    "notalar": ["İris", "Lavanta", "Sedir", "Vetiver", "Kakao", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "261",
@@ -550,7 +617,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Deri, Aromatik, Odunsu",
-    "notalar": ["Menekşe Yaprağı", "Deri", "Muskat", "Sedir", "Vetiver", "Lavanta"]
+    "notalar": ["Menekşe Yaprağı", "Deri", "Muskat", "Sedir", "Vetiver", "Lavanta"],
+    "barkod": ""
   },
   {
     "kod": "262",
@@ -558,7 +626,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Şipre, Çiçeksi, Narenciye",
-    "notalar": ["Narenciye", "Portakal", "Bergamot", "Yasemin", "Gül", "Liçi", "Amber", "Beyaz Misk", "Vetiver", "Paçuli"]
+    "notalar": ["Narenciye", "Portakal", "Bergamot", "Yasemin", "Gül", "Liçi", "Amber", "Beyaz Misk", "Vetiver", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "263",
@@ -566,7 +635,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Meyveli",
-    "notalar": ["Greyfurt", "Ayva", "Yasemin", "Gül", "Beyaz Misk", "Hafif Odunsu Notalar", "Amber"]
+    "notalar": ["Greyfurt", "Ayva", "Yasemin", "Gül", "Beyaz Misk", "Hafif Odunsu Notalar", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "264",
@@ -574,7 +644,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Baharatlı, Amber",
-    "notalar": ["Pembe Biber", "Yasemin", "Ambersi Paçuli", "Beyaz Misk", "Vanilya"]
+    "notalar": ["Pembe Biber", "Yasemin", "Ambersi Paçuli", "Beyaz Misk", "Vanilya"],
+    "barkod": ""
   },
   {
     "kod": "265",
@@ -582,7 +653,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Aldehit, Sabunsu",
-    "notalar": ["Aldehitler", "Ylang-Ylang", "Neroli", "Gül", "Yasemin", "Sandal Ağacı", "Vanilya", "Amber"]
+    "notalar": ["Aldehitler", "Ylang-Ylang", "Neroli", "Gül", "Yasemin", "Sandal Ağacı", "Vanilya", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "267",
@@ -590,7 +662,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Gül, Pudralı",
-    "notalar": ["Şakayık", "Liçi", "Gül", "Manolya", "Sedir", "Amber"]
+    "notalar": ["Şakayık", "Liçi", "Gül", "Manolya", "Sedir", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "268",
@@ -598,7 +671,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Baharatlı, Sandal Ağacı",
-    "notalar": ["Sandal Ağacı", "Gül", "Tarçın", "Vanilya", "Tütün", "Limon"]
+    "notalar": ["Sandal Ağacı", "Gül", "Tarçın", "Vanilya", "Tütün", "Limon"],
+    "barkod": ""
   },
   {
     "kod": "270",
@@ -606,7 +680,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Aromatik, Baharatlı",
-    "notalar": ["Nane", "Menekşe Yaprağı", "Pembe Biber", "Kakule", "Tarçın", "Lavanta", "Ananas", "Kavun", "Adaçayı", "Amber", "Sedir", "Kestane", "Vanilya"]
+    "notalar": ["Nane", "Menekşe Yaprağı", "Pembe Biber", "Kakule", "Tarçın", "Lavanta", "Ananas", "Kavun", "Adaçayı", "Amber", "Sedir", "Kestane", "Vanilya"],
+    "barkod": ""
   },
   {
     "kod": "271",
@@ -614,7 +689,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Odunsu, Misk",
-    "notalar": ["Mandalina Yağı", "Tahıl Yağı", "Fransız Lavanta Yağı", "Kuşüzümü", "Lavanta Yağı", "Zambak", "Yasemin", "Portakal Çiçeği", "Vanilya Özü", "Sedir Ağacı Yağı", "Amber", "Misk"]
+    "notalar": ["Mandalina Yağı", "Tahıl Yağı", "Fransız Lavanta Yağı", "Kuşüzümü", "Lavanta Yağı", "Zambak", "Yasemin", "Portakal Çiçeği", "Vanilya Özü", "Sedir Ağacı Yağı", "Amber", "Misk"],
+    "barkod": ""
   },
   {
     "kod": "274",
@@ -622,7 +698,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Meyveli, Çiçeksi, Odunsu",
-    "notalar": ["Yeşil Elma", "Bergamot", "Şeftali", "Kayısı", "Erik", "Yasemin", "Sandal Ağacı", "Sedir", "Misk", "Vanilya"]
+    "notalar": ["Yeşil Elma", "Bergamot", "Şeftali", "Kayısı", "Erik", "Yasemin", "Sandal Ağacı", "Sedir", "Misk", "Vanilya"],
+    "barkod": ""
   },
   {
     "kod": "275",
@@ -630,7 +707,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Aromatik",
-    "notalar": ["Bergamot", "Taze Nane", "Lavanta", "Dağ Kekiği", "Itır Çiçeği", "Sandal Ağacı", "Amber", "Sedir"]
+    "notalar": ["Bergamot", "Taze Nane", "Lavanta", "Dağ Kekiği", "Itır Çiçeği", "Sandal Ağacı", "Amber", "Sedir"],
+    "barkod": ""
   },
   {
     "kod": "276",
@@ -638,7 +716,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Baharatlı",
-    "notalar": ["Mor Salkımlı Sümbüller", "Leylaklar", "Portakal Çiçeği", "Sıcak Baharatlar"]
+    "notalar": ["Mor Salkımlı Sümbüller", "Leylaklar", "Portakal Çiçeği", "Sıcak Baharatlar"],
+    "barkod": ""
   },
   {
     "kod": "278",
@@ -646,7 +725,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Oryantal, Odunsu, Tatlı",
-    "notalar": ["Turunçgiller", "Limon", "Adaçayı", "Kadife Çiçeği", "Pralin", "Tarçın", "Tolu Balsamı", "Siyah Kakule", "Paçuli", "Siyah Kehribar", "Abanoz Ağacı", "Palisander Gül Ağacı"]
+    "notalar": ["Turunçgiller", "Limon", "Adaçayı", "Kadife Çiçeği", "Pralin", "Tarçın", "Tolu Balsamı", "Siyah Kakule", "Paçuli", "Siyah Kehribar", "Abanoz Ağacı", "Palisander Gül Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "281",
@@ -654,7 +734,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Meyveli, Tatlı",
-    "notalar": ["Ananas", "Gül", "Armut", "Vanilya", "Sedir", "Amberwood"]
+    "notalar": ["Ananas", "Gül", "Armut", "Vanilya", "Sedir", "Amberwood"],
+    "barkod": ""
   },
   {
     "kod": "282",
@@ -662,7 +743,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Aromatik, Taze",
-    "notalar": ["Limon", "Lavanta", "Neroli", "Sedir", "Paçuli", "Amber"]
+    "notalar": ["Limon", "Lavanta", "Neroli", "Sedir", "Paçuli", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "284",
@@ -670,7 +752,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Akuatik (Deniz), Taze, Meyveli",
-    "notalar": ["Kırmızı Meyveler", "Deniz Notaları", "Nane", "Manolya", "Vetiver", "Tütün"]
+    "notalar": ["Kırmızı Meyveler", "Deniz Notaları", "Nane", "Manolya", "Vetiver", "Tütün"],
+    "barkod": ""
   },
   {
     "kod": "285",
@@ -678,7 +761,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Baharatlı, Deri",
-    "notalar": ["Baharatlar", "Rom", "Tütün", "Deri", "İris", "Sümbülteber", "Tonka Fasulyesi", "Guaiac Ağacı", "Benzoin"]
+    "notalar": ["Baharatlar", "Rom", "Tütün", "Deri", "İris", "Sümbülteber", "Tonka Fasulyesi", "Guaiac Ağacı", "Benzoin"],
+    "barkod": ""
   },
   {
     "kod": "286",
@@ -686,7 +770,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Misk, Çiçeksi, Odunsu",
-    "notalar": ["Vişne", "Erik", "Frezya", "Orkide", "İris", "Vanilya", "Misk", "Amber"]
+    "notalar": ["Vişne", "Erik", "Frezya", "Orkide", "İris", "Vanilya", "Misk", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "288",
@@ -694,7 +779,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Aromatik, Odunsu, Tatlı",
-    "notalar": ["Kakule", "Lavanta", "İris", "Vanilya", "Doğu Notaları", "Odunsu Notalar"]
+    "notalar": ["Kakule", "Lavanta", "İris", "Vanilya", "Doğu Notaları", "Odunsu Notalar"],
+    "barkod": ""
   },
   {
     "kod": "289",
@@ -702,7 +788,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Aromatik, Baharatlı",
-    "notalar": ["Narenciye Yaprakları", "Kesik Çim", "Baharat Yaprakları", "Taze Biber", "Zencefil", "Gardenya", "Sandal Ağacı", "Gayak Ağacı", "Tütsülenmiş Beyaz Misk"]
+    "notalar": ["Narenciye Yaprakları", "Kesik Çim", "Baharat Yaprakları", "Taze Biber", "Zencefil", "Gardenya", "Sandal Ağacı", "Gayak Ağacı", "Tütsülenmiş Beyaz Misk"],
+    "barkod": ""
   },
   {
     "kod": "291",
@@ -710,7 +797,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Şipre, Meyveli, Baharatlı",
-    "notalar": ["Erik", "Şeftali", "Tarçın", "Karanfil", "Gül", "Meşe Yosunu", "Amber", "Misk"]
+    "notalar": ["Erik", "Şeftali", "Tarçın", "Karanfil", "Gül", "Meşe Yosunu", "Amber", "Misk"],
+    "barkod": ""
   },
   {
     "kod": "292",
@@ -718,7 +806,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Meyveli, Çiçeksi",
-    "notalar": ["Çarkıfelek Meyvesi", "Greyfurt", "Ananas", "Mandalina", "Çilek", "Şakayık", "Vanilya Orkidesi", "Kırmızı Meyveler", "Yasemin", "Müge Çiçeği", "Misk", "Odunsu Notalar", "Meşe Yosunu"]
+    "notalar": ["Çarkıfelek Meyvesi", "Greyfurt", "Ananas", "Mandalina", "Çilek", "Şakayık", "Vanilya Orkidesi", "Kırmızı Meyveler", "Yasemin", "Müge Çiçeği", "Misk", "Odunsu Notalar", "Meşe Yosunu"],
+    "barkod": ""
   },
   {
     "kod": "293",
@@ -726,7 +815,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Meyveli, Tatlı",
-    "notalar": ["Armut", "Liçi", "Kırmızı Elma", "Mandalina", "Gardenya", "Yasemin", "Frezya", "Manolya", "Vanilya", "Pralin", "Amber", "Misk", "Sandal Ağacı", "Benzoin"]
+    "notalar": ["Armut", "Liçi", "Kırmızı Elma", "Mandalina", "Gardenya", "Yasemin", "Frezya", "Manolya", "Vanilya", "Pralin", "Amber", "Misk", "Sandal Ağacı", "Benzoin"],
+    "barkod": ""
   },
   {
     "kod": "298",
@@ -734,7 +824,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Şipre, Misk",
-    "notalar": ["Armut", "Bergamot", "Isparta Gülü", "Yasemin Çiçeği", "Beyaz Şipre", "Beyaz Misk", "Vanilya"]
+    "notalar": ["Armut", "Bergamot", "Isparta Gülü", "Yasemin Çiçeği", "Beyaz Şipre", "Beyaz Misk", "Vanilya"],
+    "barkod": ""
   },
   {
     "kod": "299",
@@ -742,7 +833,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Pudralı, Misk, Odunsu",
-    "notalar": ["Şehvetli Çiçek Buketi", "Beyaz Yasemin Yaprakları", "Bulgar Gülü", "Pudramsı Misk", "Vetiver", "Sedir Ağacı"]
+    "notalar": ["Şehvetli Çiçek Buketi", "Beyaz Yasemin Yaprakları", "Bulgar Gülü", "Pudramsı Misk", "Vetiver", "Sedir Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "301",
@@ -750,7 +842,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Baharatlı, Narenciye",
-    "notalar": ["Beyaz Biber", "Limon", "Ağaç Kavunu", "Bergamot", "Meyvemsi Davana Notaları", "Likör", "Portakal Çiçeği", "Islak Otsu Notalar", "Sedir", "Aselbent", "Amber"]
+    "notalar": ["Beyaz Biber", "Limon", "Ağaç Kavunu", "Bergamot", "Meyvemsi Davana Notaları", "Likör", "Portakal Çiçeği", "Islak Otsu Notalar", "Sedir", "Aselbent", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "304",
@@ -758,7 +851,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Akuatik, Narenciye",
-    "notalar": ["Yuzu", "Limon", "Mine Çiçeği", "Mandalina", "Selvi", "Calone", "Kişniş", "Tarhun", "Adaçayı", "Mavi Lotus", "Muskat", "Müge Çiçeği", "Geranyum", "Safran", "Tarçın", "Vetiver", "Tütün"]
+    "notalar": ["Yuzu", "Limon", "Mine Çiçeği", "Mandalina", "Selvi", "Calone", "Kişniş", "Tarhun", "Adaçayı", "Mavi Lotus", "Muskat", "Müge Çiçeği", "Geranyum", "Safran", "Tarçın", "Vetiver", "Tütün"],
+    "barkod": ""
   },
   {
     "kod": "305",
@@ -766,7 +860,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Aromatik, Odunsu, Karamel",
-    "notalar": ["Adaçayı", "Mandalina", "Karamel", "Tonka Fasulyesi", "Vetiver"]
+    "notalar": ["Adaçayı", "Mandalina", "Karamel", "Tonka Fasulyesi", "Vetiver"],
+    "barkod": ""
   },
   {
     "kod": "306",
@@ -774,7 +869,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Oryantal, Fougere, Meyveli",
-    "notalar": ["Armut", "Siyah Lavanta", "Nane", "Bergamot", "Kimyon", "Tarçın", "Adaçayı", "Siyah Vanilya", "Amber", "Odunsu Notalar"]
+    "notalar": ["Armut", "Siyah Lavanta", "Nane", "Bergamot", "Kimyon", "Tarçın", "Adaçayı", "Siyah Vanilya", "Amber", "Odunsu Notalar"],
+    "barkod": ""
   },
   {
     "kod": "308",
@@ -782,7 +878,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Aromatik, Odunsu, Fougère",
-    "notalar": ["Anason", "Greyfurt", "Ahududu", "Lavanta", "Guaiac Ağacı", "Vetiver"]
+    "notalar": ["Anason", "Greyfurt", "Ahududu", "Lavanta", "Guaiac Ağacı", "Vetiver"],
+    "barkod": ""
   },
   {
     "kod": "309",
@@ -790,7 +887,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Oryantal, Baharatlı",
-    "notalar": ["Bergamot", "Greyfurt", "Tarçın", "Pembe Biber", "Lavanta", "Elemi", "Vetiver", "Tütün", "Deri"]
+    "notalar": ["Bergamot", "Greyfurt", "Tarçın", "Pembe Biber", "Lavanta", "Elemi", "Vetiver", "Tütün", "Deri"],
+    "barkod": ""
   },
   {
     "kod": "310",
@@ -798,7 +896,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Taze, Tatlı",
-    "notalar": ["Ozonik Notalar", "Erik", "Bergamot", "Greyfurt", "Portakal Çiçeği", "Bal", "Yasemin", "Kaşmir Ahşap", "Sedir", "Fındık", "Amber Ahşap", "Vetiver", "Paçuli", "Meşe Yosunu"]
+    "notalar": ["Ozonik Notalar", "Erik", "Bergamot", "Greyfurt", "Portakal Çiçeği", "Bal", "Yasemin", "Kaşmir Ahşap", "Sedir", "Fındık", "Amber Ahşap", "Vetiver", "Paçuli", "Meşe Yosunu"],
+    "barkod": ""
   },
   {
     "kod": "313",
@@ -806,7 +905,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Şipre, Çiçeksi, Bal",
-    "notalar": ["Mandalina", "Kan Portakalı", "Şeftali", "Portakal Çiçeği", "Yasemin", "Gardenya", "Bal", "Meyankökü", "Karamel", "Balmumu", "Paçuli"]
+    "notalar": ["Mandalina", "Kan Portakalı", "Şeftali", "Portakal Çiçeği", "Yasemin", "Gardenya", "Bal", "Meyankökü", "Karamel", "Balmumu", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "314",
@@ -814,7 +914,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Odunsu",
-    "notalar": ["Sümbülteber", "Yasemin", "Bergamot", "Portakal Çiçeği", "Vanilya", "Beyaz Misk", "Sedir Ağacı"]
+    "notalar": ["Sümbülteber", "Yasemin", "Bergamot", "Portakal Çiçeği", "Vanilya", "Beyaz Misk", "Sedir Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "315",
@@ -822,7 +923,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Çiçeksi, Baharatlı",
-    "notalar": ["Pembe Biber", "Yeşil Mandalina", "Portakal Çiçeği Özü", "Mirabelle Eriği", "Kavrulmuş Tonka Tanesi", "Laos Benzoini"]
+    "notalar": ["Pembe Biber", "Yeşil Mandalina", "Portakal Çiçeği Özü", "Mirabelle Eriği", "Kavrulmuş Tonka Tanesi", "Laos Benzoini"],
+    "barkod": ""
   },
   {
     "kod": "316",
@@ -830,7 +932,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Gül, Aromatik",
-    "notalar": ["Anason", "Verbena", "Gül", "Şakayık", "Vanilya", "Paçuli"]
+    "notalar": ["Anason", "Verbena", "Gül", "Şakayık", "Vanilya", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "317",
@@ -838,7 +941,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Baharatlı, Meyveli",
-    "notalar": ["Elma", "Portakal Çiçeği", "Tarçın", "Karanfil", "Sardunya", "Vanilya", "Sandal Ağacı", "Sedir Ağacı", "Güve Otu"]
+    "notalar": ["Elma", "Portakal Çiçeği", "Tarçın", "Karanfil", "Sardunya", "Vanilya", "Sandal Ağacı", "Sedir Ağacı", "Güve Otu"],
+    "barkod": ""
   },
   {
     "kod": "318",
@@ -846,7 +950,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Beyaz Çiçek, Odunsu, Amber",
-    "notalar": ["Armut", "Sümbülteber", "Yasemin", "Portakal Çiçeği", "Vetiver", "Paçuli", "Vanilya"]
+    "notalar": ["Armut", "Sümbülteber", "Yasemin", "Portakal Çiçeği", "Vetiver", "Paçuli", "Vanilya"],
+    "barkod": ""
   },
   {
     "kod": "319",
@@ -854,7 +959,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Akuatik, Aromatik, Odunsu",
-    "notalar": ["Kalabriyen Bergamot", "Greyfurt", "İncir Yaprağı", "Su Notaları", "Menekşe Yaprakları", "Kara Biber", "Papirus Odunu", "Ambrox", "Paçuli Özü", "Mineral Misk", "Tonka Fasulyesi", "Safran", "Projen Tütsüsü"]
+    "notalar": ["Kalabriyen Bergamot", "Greyfurt", "İncir Yaprağı", "Su Notaları", "Menekşe Yaprakları", "Kara Biber", "Papirus Odunu", "Ambrox", "Paçuli Özü", "Mineral Misk", "Tonka Fasulyesi", "Safran", "Projen Tütsüsü"],
+    "barkod": ""
   },
   {
     "kod": "321",
@@ -862,7 +968,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Amber",
-    "notalar": ["Armut", "Neroli", "Bergamot", "Yosun", "Yasemin", "Neroli Özü", "Ambrofix", "Serenolide", "Amber", "Bourbon Vanilya", "Vanilya"]
+    "notalar": ["Armut", "Neroli", "Bergamot", "Yosun", "Yasemin", "Neroli Özü", "Ambrofix", "Serenolide", "Amber", "Bourbon Vanilya", "Vanilya"],
+    "barkod": ""
   },
   {
     "kod": "323",
@@ -870,7 +977,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Misk",
-    "notalar": ["Gül", "Şakayık", "Bergamot", "Beyaz Misk"]
+    "notalar": ["Gül", "Şakayık", "Bergamot", "Beyaz Misk"],
+    "barkod": ""
   },
   {
     "kod": "326",
@@ -878,7 +986,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Aromatik, Akuatik, Tütsü",
-    "notalar": ["Sucul Notalar", "Bergamot", "Biberiye", "Adaçayı", "Sardunya", "Tütsü", "Paçuli"]
+    "notalar": ["Sucul Notalar", "Bergamot", "Biberiye", "Adaçayı", "Sardunya", "Tütsü", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "327",
@@ -886,7 +995,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Woody, Amber, Aromatik",
-    "notalar": ["Tonka Fasulyesi", "Lavanta", "Benzoin"]
+    "notalar": ["Tonka Fasulyesi", "Lavanta", "Benzoin"],
+    "barkod": ""
   },
   {
     "kod": "328",
@@ -894,7 +1004,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Odunsu, Çiçeksi",
-    "notalar": ["Kalabria Bergamotu", "Tunus Portakal Çiçeği", "Endonezya Paçulisi", "Ambrofix"]
+    "notalar": ["Kalabria Bergamotu", "Tunus Portakal Çiçeği", "Endonezya Paçulisi", "Ambrofix"],
+    "barkod": ""
   },
   {
     "kod": "329",
@@ -902,7 +1013,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Aromatik, Baharatlı, Taze",
-    "notalar": ["Zencefil", "Adaçayı", "Elma", "Lavanta", "Greyfurt", "Amberwood", "Tütsü"]
+    "notalar": ["Zencefil", "Adaçayı", "Elma", "Lavanta", "Greyfurt", "Amberwood", "Tütsü"],
+    "barkod": ""
   },
   {
     "kod": "331",
@@ -910,7 +1022,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Baharatlı, Lavanta, Odunsu",
-    "notalar": ["Tarçın", "Muskat", "Kakule", "Greyfurt", "Lavanta", "Meyan Kökü", "Sandal Ağacı", "Kehribar", "Paçuli", "Haiti Vetiveri"]
+    "notalar": ["Tarçın", "Muskat", "Kakule", "Greyfurt", "Lavanta", "Meyan Kökü", "Sandal Ağacı", "Kehribar", "Paçuli", "Haiti Vetiveri"],
+    "barkod": ""
   },
   {
     "kod": "332",
@@ -918,7 +1031,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Baharatlı, Odunsu",
-    "notalar": ["Bergamot", "Amber", "Likör", "Meyveli Notalar", "Kestane", "Sedir Ağacı"]
+    "notalar": ["Bergamot", "Amber", "Likör", "Meyveli Notalar", "Kestane", "Sedir Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "335",
@@ -926,7 +1040,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Oryantal, Vanilya",
-    "notalar": ["Ahududu", "Lavanta", "Vanilya Çiçeği", "Süet", "Kakao", "Zencefil", "Vanilyalı Havyar"]
+    "notalar": ["Ahududu", "Lavanta", "Vanilya Çiçeği", "Süet", "Kakao", "Zencefil", "Vanilyalı Havyar"],
+    "barkod": ""
   },
   {
     "kod": "336",
@@ -934,7 +1049,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Amber, Vanilya",
-    "notalar": ["Bergamot", "Ylang Ylang", "Portakal Çiçeği", "Şakayık", "Gardenya", "Gül Suyu", "Tonka Fasulyesi", "Amber", "Vanilya"]
+    "notalar": ["Bergamot", "Ylang Ylang", "Portakal Çiçeği", "Şakayık", "Gardenya", "Gül Suyu", "Tonka Fasulyesi", "Amber", "Vanilya"],
+    "barkod": ""
   },
   {
     "kod": "338",
@@ -942,7 +1058,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Baharatlı, Odunsu, Citrus",
-    "notalar": ["Zencefil", "Odunsu Notalar", "Vanilya"]
+    "notalar": ["Zencefil", "Odunsu Notalar", "Vanilya"],
+    "barkod": ""
   },
   {
     "kod": "340",
@@ -950,7 +1067,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Erkek",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Vanilya, Aromatik",
-    "notalar": ["Vanilya", "Vetiver", "Adaçayı", "Lavanta"]
+    "notalar": ["Vanilya", "Vetiver", "Adaçayı", "Lavanta"],
+    "barkod": ""
   },
   {
     "kod": "342",
@@ -958,7 +1076,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Oryantal, Vanilya, Meyveli",
-    "notalar": ["Armut", "Bergamot", "Vanilya Orkidesi", "Tonka Fasulyesi", "Vetiver", "Amber"]
+    "notalar": ["Armut", "Bergamot", "Vanilya Orkidesi", "Tonka Fasulyesi", "Vetiver", "Amber"],
+    "barkod": ""
   },
   {
     "kod": "343",
@@ -966,7 +1085,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Çiçeksi, Misk, Aquatik",
-    "notalar": ["Calypsone", "Kırmızı Meyveler", "Bergamot", "Zambak", "Yasemin", "Ylang-Ylang", "Beze", "Misk", "Paçuli"]
+    "notalar": ["Calypsone", "Kırmızı Meyveler", "Bergamot", "Zambak", "Yasemin", "Ylang-Ylang", "Beze", "Misk", "Paçuli"],
+    "barkod": ""
   },
   {
     "kod": "345",
@@ -974,7 +1094,8 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Meyveli, Çiçeksi, Tatlı",
-    "notalar": ["Armut", "Mandalina", "Liçi", "Kırmızı Elma", "Gardenya", "Bezelye", "Yasemin", "Frezya", "Manolya", "Vanilya", "Benzoin", "Misk", "Pralin", "Kehribar", "Sandal Ağacı"]
+    "notalar": ["Armut", "Mandalina", "Liçi", "Kırmızı Elma", "Gardenya", "Bezelye", "Yasemin", "Frezya", "Manolya", "Vanilya", "Benzoin", "Misk", "Pralin", "Kehribar", "Sandal Ağacı"],
+    "barkod": ""
   },
   {
     "kod": "346",
@@ -982,25 +1103,33 @@ parfum_veritabani_json = """
     "cinsiyet": "Kadın",
     "resim_yolu": "local_asset/placeholder.jpg",
     "kategori": "Amber, Fougère, Vanilya",
-    "notalar": ["Lavanta", "Vanilya", "Orkide", "Tonka Fasulyesi", "Amber", "Vetiver"]
+    "notalar": ["Lavanta", "Vanilya", "Orkide", "Tonka Fasulyesi", "Amber", "Vetiver"],
+    "barkod": ""
   }
 ]
 """
 # --- ADIM 2: VERİTABANINI YÜKLEME VE MOTORU HAZIRLAMA ---
 
-# *** YENİ GÜNCELLEME (v3.2) ***
-# Resim yolları .jpg olarak ayarlandı (kullanıcı teyidi).
+# *** YEREL DOSYA YOLU (v3.2) ***
 ERKEK_YOLU = "resimler/erkek.jpg"
 KADIN_YOLU = "resimler/kadin.jpg"
-NICHE_YOLU = "resimler/niche.jpg" # (Unisex için)
+NICHE_YOLU = "resimler/niche.jpg" 
 
 # Veritabanını yükle
 try:
     veritabani = json.loads(parfum_veritabani_json)
 except json.JSONDecodeError as e:
-    st.error("JSON Veritabanı Yüklenirken Kritik Hata Oluştu! JSON yapısını kontrol edin.")
+    st.error("JSON Veritabanı Yüklenirken Kritik Hata Oluştu! Lütfen JSON yapısını kontrol edin.")
     st.exception(e)
     st.stop()
+
+# Fonksiyon: Barkod ile arama
+def barkod_ile_parfum_bul(barkod_terimi, db):
+    barkod_terimi = barkod_terimi.strip()
+    for p in db:
+        if p['barkod'] == barkod_terimi:
+            return p
+    return None
 
 # Fonksiyon: Nota ile arama
 def nota_ile_parfum_bul(arama_terimi, db):
@@ -1018,7 +1147,7 @@ def nota_ile_parfum_bul(arama_terimi, db):
             
     return sonuclar
 
-# Fonksiyon: Benzerlik motorunu hazırla ve çalıştır
+# Fonksiyon: Benzerlik motorunu hazırla
 @st.cache_resource
 def benzerlik_motorunu_hazirla(db):
     dokumanlar = [" ".join(p['notalar']) for p in db]
@@ -1058,20 +1187,70 @@ def benzer_parfumleri_getir(kod_veya_ad, db, skor_matrisi, top_n=3):
     benzer_parfumler = [db[i] for i in en_benzer_indexler]
     return bulunan_parfum, benzer_parfumler
 
-# --- ADIM 3: ARAYÜZÜ (WEB SİTESİ) OLUŞTURMA (v3.2 - LOKAL JPG) ---
+# Fonksiyon: Parfüm detaylarını gösteren modül (v3.5 GÜNCELLEMESİ)
+def parfum_detaylarini_goster(p):
+    col_img, col_txt = st.columns([1, 4]) 
+    with col_img:
+        # Cinsiyete göre yerel dosya yolu seçimi
+        resim_yolu_to_display = NICHE_YOLU 
+        if p['cinsiyet'] == "Erkek":
+            resim_yolu_to_display = ERKEK_YOLU
+        elif p['cinsiyet'] == "Kadın":
+            resim_yolu_to_display = KADIN_YOLU
+        
+        if os.path.exists(resim_yolu_to_display):
+            st.image(resim_yolu_to_display, width=100)
+        else:
+            st.caption(f"[Resim bekleniyor: {resim_yolu_to_display}]")
+
+    with col_txt:
+        # Kod, İsim ve Cinsiyet
+        st.markdown(f"**{p['kod']} - {p['orijinal_ad']} ({p['cinsiyet']})**")
+        
+        # Kategori
+        st.caption(f"Kategori: *{p['kategori']}*")
+        
+        # Barkod
+        if p['barkod']:
+            st.caption(f"Barkod: **{p['barkod']}**")
+        
+        # Notalar (Yeni Eklendi)
+        st.markdown(f"**Notalar:** {', '.join(p['notalar'])}")
+        
+    st.divider()
+
+# --- ADIM 3: ARAYÜZÜ OLUŞTURMA (v3.5) ---
 
 st.set_page_config(page_title="Lorinna Koku Rehberi", layout="wide", page_icon="✨")
-st.title("✨ Lorinna Koku Rehberi (v3.2)")
-st.write(f"Stoktaki **{len(veritabani)}** adet parfüm arasından mükemmel kokuyu bulun.")
+st.title("✨ Lorinna Koku Rehberi (v3.5)")
+st.caption(f"Stoktaki **{len(veritabani)}** adet parfüm arasından mükemmel kokuyu bulun.")
 st.markdown("---")
 
-col1, col2 = st.columns(2)
+# 3 Sütunlu Arayüz
+col1, col2, col3 = st.columns(3)
+
+# --- SÜTUN 3: BARKOD İLE ARAMA (YENİ ÖZELLİK) ---
+with col3:
+    st.header("3. Barkod ile Arama")
+    st.write("Mobil uygulama için temel arama.")
+    barkod_terimi = st.text_input("Barkod Numarası:", key="barkod_arama")
+    
+    if st.button("Barkod Sorgula", key="barkod_buton"):
+        if barkod_terimi:
+            bulunan_parfum = barkod_ile_parfum_bul(barkod_terimi, veritabani)
+            if bulunan_parfum:
+                st.success(f"Barkod Eşleşmesi Bulundu:")
+                parfum_detaylarini_goster(bulunan_parfum)
+            else:
+                st.warning(f"'{barkod_terimi}' barkodlu parfüm bulunamadı. Lütfen tam numara girin.")
+        else:
+            st.error("Lütfen barkod numarası girin.")
 
 # --- SÜTUN 1: NOTA, KATEGORİ VEYA CİNSİYETE GÖRE ARAMA ---
 with col1:
     st.header("1. Nota veya Gruba Göre Bul")
     st.write("Arama kutusuna birden fazla kelime yazabilirsiniz:")
-    st.caption("Örnek aramalar: 'odunsu erkek', 'unisex vanilya', 'çiçeksi kadın', 'ananas'")
+    st.caption("Örn: 'odunsu erkek', 'unisex vanilya'")
     
     nota_terimi = st.text_input("Aranacak Nota veya Grup:", key="nota_arama")
     
@@ -1084,35 +1263,17 @@ with col1:
                 st.success(f"'{nota_terimi}' içeren {len(sonuclar)} adet parfüm bulundu:")
                 
                 for p in sonuclar:
-                    col_img, col_txt = st.columns([1, 4]) 
-                    with col_img:
-                        # *** v3.2 GÜNCELLEMESİ: Cinsiyete göre LOKAL .jpg seçimi ***
-                        resim_yolu_to_display = NICHE_YOLU # Varsayılan (Unisex)
-                        if p['cinsiyet'] == "Erkek":
-                            resim_yolu_to_display = ERKEK_YOLU
-                        elif p['cinsiyet'] == "Kadın":
-                            resim_yolu_to_display = KADIN_YOLU
-                        
-                        # Resmi göstermeden önce varlığını kontrol et
-                        if os.path.exists(resim_yolu_to_display):
-                            st.image(resim_yolu_to_display, width=100)
-                        else:
-                            # Eğer resim bulunamazsa (yüklenmediyse/adı yanlışsa)
-                            st.caption(f"[Resim bekleniyor: {resim_yolu_to_display}]")
-
-                    with col_txt:
-                        st.markdown(f"**{p['kod']} - {p['orijinal_ad']} ({p['cinsiyet']})**")
-                        st.caption(f"Kategori: *{p['kategori']}*")
-                    st.divider() 
+                    parfum_detaylarini_goster(p)
         else:
             st.error("Lütfen aranacak bir terim girin.")
 
 # --- SÜTUN 2: BENZER KOKU ÖNERİSİ ---
 with col2:
     st.header("2. Benzer Koku Öner")
-    st.write("Parfümün kodunu veya adının bir kısmını yazın (Örn: 'aventus', 'baccarat', '008')")
+    st.write("Beğenilen parfümün kodunu veya adını yazın.")
+    st.caption("Örn: 'aventus', 'baccarat', '008'")
     
-    isim_terimi = st.text_input("Beğenilen Parfümün Kodu veya Adı:", key="isim_arama")
+    isim_terimi = st.text_input("Baz Parfüm Kodu/Adı:", key="isim_arama")
     
     if st.button("Benzer Öneriler Getir", key="isim_buton"):
         if isim_terimi:
@@ -1120,45 +1281,16 @@ with col2:
             
             if baz_parfum:
                 st.success(f"Baz Alınan Parfüm:")
-                col_img_baz, col_txt_baz = st.columns([1, 4])
-                with col_img_baz:
-                    # *** v3.2 GÜNCELLEMESİ: Cinsiyete göre LOKAL .jpg seçimi ***
-                    resim_yolu_baz = NICHE_YOLU # Varsayılan (Unisex)
-                    if baz_parfum['cinsiyet'] == "Erkek":
-                        resim_yolu_baz = ERKEK_YOLU
-                    elif baz_parfum['cinsiyet'] == "Kadın":
-                        resim_yolu_baz = KADIN_YOLU
-                    
-                    if os.path.exists(resim_yolu_baz):
-                        st.image(resim_yolu_baz, width=100)
-                    else:
-                        st.caption(f"[Resim bekleniyor: {resim_yolu_baz}]")
-
-                with col_txt_baz:
-                    st.markdown(f"**{baz_parfum['kod']} - {baz_parfum['orijinal_ad']} ({baz_parfum['cinsiyet']})**")
+                # Baz Parfüm detayları (Notlar dahil)
+                parfum_detaylarini_goster(baz_parfum)
                 
                 st.markdown("---")
                 st.write(f"Bu parfüme en çok benzeyen ilk 3 öneri:")
                 
                 for p in benzer_oneriler:
-                    col_img, col_txt = st.columns([1, 4])
-                    with col_img:
-                        # *** v3.2 GÜNCELLEMESİ: Cinsiyete göre LOKAL .jpg seçimi ***
-                        resim_yolu_onerilen = NICHE_YOLU # Varsayılan (Unisex)
-                        if p['cinsiyet'] == "Erkek":
-                            resim_yolu_onerilen = ERKEK_YOLU
-                        elif p['cinsiyet'] == "Kadın":
-                            resim_yolu_onerilen = KADIN_YOLU
-                        
-                        if os.path.exists(resim_yolu_onerilen):
-                            st.image(resim_yolu_onerilen, width=100)
-                        else:
-                            st.caption(f"[Resim bekleniyor: {resim_yolu_onerilen}]")
-
-                    with col_txt:
-                        st.markdown(f"**{p['kod']} - {p['orijinal_ad']} ({p['cinsiyet']})**")
-                        st.caption(f"Öne çıkan ortak notalar: {', '.join(p['notalar'][:4])}...")
-                    st.divider()
+                    # Önerilen Parfüm detayları (Notlar dahil)
+                    parfum_detaylarini_goster(p)
+                    
             else:
                 st.warning(f"'{isim_terimi}' kodlu veya isimli parfüm bulunamadı.")
         else:
