@@ -1099,6 +1099,7 @@ def akilli_arama_ve_oneri(arama_terimi, df, skor_df, top_n=3):
         # 5. En yüksek skorlu 'stoktaki' parfümleri sırala
         # (Kendisi hariç)
         if baz_parfum['stokta_mi'] == True:
+            # Eğer aranan parfüm zaten stoktaysa, onu öneri listesinden çıkar
             stoktaki_skorlar = stoktaki_skorlar.drop(baz_parfum_index)
             
         en_benzer_stoktaki_indexler = stoktaki_skorlar.nlargest(top_n).index
@@ -1117,4 +1118,145 @@ def akilli_arama_ve_oneri(arama_terimi, df, skor_df, top_n=3):
         aranacak_metin = (
             str(satir['cinsiyet']).lower() + " " +
             str(satir['kategori']).lower() + " " +
-            satir['notalar_str'].
+            satir['notalar_str'].lower()
+        )
+        return all(terim in aranacak_metin for terim in terimler)
+
+    maske = stoktaki_df.apply(nota_icerir, terimler=arama_terimleri, axis=1)
+    nota_sonuclari = stoktaki_df[maske]
+
+    if not nota_sonuclari.empty:
+        return None, nota_sonuclari.to_dict('records') # Sadece öneri listesi döner
+
+    return None, [] # Hiçbir şey bulunamadı
+
+# Fonksiyon: Parfüm kartını göster (v4.0)
+def parfum_karti_goster(p, is_base=False):
+    # Stokta olmayanlar için STOK_YOK_YOLU'nu kullan
+    if not p['stokta_mi']:
+        resim_yolu_to_display = STOK_YOK_YOLU
+    else:
+        # Cinsiyete göre yerel dosya yolu seçimi
+        resim_yolu_to_display = NICHE_YOLU 
+        if p['cinsiyet'] == "Erkek":
+            resim_yolu_to_display = ERKEK_YOLU
+        elif p['cinsiyet'] == "Kadın":
+            resim_yolu_to_display = KADIN_YOLU
+    
+    # Başlık (Stokta olanlar için KOD, olmayanlar için 'STOKTA YOK')
+    if p['stokta_mi']:
+        st.markdown(f"**{p['kod']}** ({p['cinsiyet']})", unsafe_allow_html=True)
+    else:
+        st.markdown(f"**[STOKTA YOK]** ({p['cinsiyet']})", unsafe_allow_html=True)
+        
+    
+    # Resim (Küçük Boyut)
+    if os.path.exists(resim_yolu_to_display):
+        st.image(resim_yolu_to_display, width=80) 
+    else:
+        st.caption("[Resim Yok]")
+    
+    # Ad
+    st.caption(f"**{p['orijinal_ad']}**")
+    
+    # Kategori
+    st.markdown(f"*{p['kategori'].replace(', ', ' / ')}*")
+    
+    # Notalar (FONT GÜNCELLEMESİ)
+    if is_base:
+        # Base parfümde tüm notalar (13px)
+        st.markdown(f"<p style='font-size:13px; line-height: 1.1;'>**Notalar:** {', '.join(p['notalar'])}</p>", unsafe_allow_html=True)
+    else:
+        # Öneri/Anahtar kelime sonuçlarında ilk 5 notayı göster (11px)
+        st.markdown(f"<p style='font-size:11px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'][:5])}...</p>", unsafe_allow_html=True)
+
+
+# --- ADIM 3: ANA ARAYÜZ (v4.0) ---
+
+st.set_page_config(page_title="Lorinna Koku Rehberi", layout="wide", page_icon="✨")
+
+# Dikey sıkıştırma için başlığı minimal ve yukarıda tutma
+st.markdown("<h1 style='text-align: center; margin-bottom: 0px; padding-top: 5px;'>✨ Lorinna Koku Rehberi (v4.0)</h1>", unsafe_allow_html=True)
+stokta_olan_sayisi = len(db_df[db_df['stokta_mi']==True])
+toplam_sayi = len(db_df)
+st.markdown(f"<p style='text-align: center; margin-top: 0px; margin-bottom: 20px;'>{stokta_olan_sayisi} adet stoklu parfüm | Toplam {toplam_sayi} parfüm hafızada</p>", unsafe_allow_html=True)
+st.markdown("---")
+
+
+# Arama Çubuğu (Sol Çeyrek) ve Sonuçlar (Sağ Üç Çeyrek) için Ana Bölme
+col_search_area, col_results_area = st.columns([1, 3]) # 1:3 oranında bölme
+
+with col_search_area:
+    # Arama input'u ve butonu sol çeyrekte
+    arama_terimi = st.text_input("Parfüm Kodu, Adı veya Anahtar Kelime:", key="ana_arama")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    arama_baslat = st.button("Arama Yap", use_container_width=True)
+
+with col_results_area:
+    # Sonuçların görüneceği alan (Arama çubuğunun yanında)
+    
+    if arama_baslat:
+        if arama_terimi:
+            
+            # 1. Akıllı Arama Fonksiyonunu Çağır
+            # Hata ayıklama için notaları da alalım
+            baz_parfum_serisi, oneriler_list_of_dicts = akilli_arama_ve_oneri(arama_terimi, db_df, skor_matrisi_df, top_n=3)
+            
+            # baz_parfum bir pandas Serisi olabilir, onu dict'e çevirelim
+            baz_parfum = baz_parfum_serisi.to_dict() if baz_parfum_serisi is not None else None
+            
+            # SENARYO 1: BAZ PARFÜM BULUNDU (İsim/Kod ile arandı)
+            if baz_parfum is not None:
+                
+                # A) Stokta Olan Parfüm Arandı (Örn: Aventus)
+                if baz_parfum['stokta_mi']:
+                    st.markdown("#### 🏆 Parfüm Stoklarımızda Mevcut ve Benzer Öneriler")
+                    
+                    col_baz, col_onerilen1, col_onerilen2, col_onerilen3 = st.columns([1.5, 1, 1, 1])
+                    
+                    with col_baz:
+                        st.markdown("##### Aradığınız Parfüm (Stokta)", unsafe_allow_html=True)
+                        parfum_karti_goster(baz_parfum, is_base=True) # Geniş detay
+                    
+                    st.markdown("<p style='text-align: center;'><strong>➡️ Bunlar da Hoşunuza Gidebilir</strong></p>", unsafe_allow_html=True)
+                    
+                    cols_oneri = [col_onerilen1, col_onerilen2, col_onerilen3]
+                    for i, p_dict in enumerate(oneriler_list_of_dicts):
+                        with cols_oneri[i]:
+                            parfum_karti_goster(p_dict, is_base=False) # Küçük kart
+                
+                # B) Stokta Olmayan Parfüm Arandı (Örn: Dior Sauvage)
+                else:
+                    st.markdown("#### ⚠️ Aradığınız Parfüm Stokta Yok. İşte Benzer Önerilerimiz:")
+                    
+                    col_baz, col_onerilen1, col_onerilen2, col_onerilen3 = st.columns([1.5, 1, 1, 1])
+                    
+                    with col_baz:
+                        st.markdown("##### Aradığınız Parfüm (Stokta Yok)", unsafe_allow_html=True)
+                        parfum_karti_goster(baz_parfum, is_base=True) # Geniş detay
+                    
+                    st.markdown("<p style='text-align: center;'><strong>➡️ Stoktaki Benzer Önerilerimiz</strong></p>", unsafe_allow_html=True)
+                    
+                    cols_oneri = [col_onerilen1, col_onerilen2, col_onerilen3]
+                    for i, p_dict in enumerate(oneriler_list_of_dicts):
+                        with cols_oneri[i]:
+                            parfum_karti_goster(p_dict, is_base=False) # Küçük kart
+
+            # SENARYO 2: BAZ PARFÜM BULUNAMADI (Anahtar Kelime/Nota ile arandı)
+            elif oneriler_list_of_dicts: # 'oneriler' listesi nota araması sonuçlarını içerir
+                st.success(f"🔍 '{arama_terimi}' anahtar kelimesini içeren **{len(oneriler_list_of_dicts)}** adet STOKTAKİ parfüm bulundu:")
+                
+                cols_list = st.columns(4)
+                for i, p_dict in enumerate(oneriler_list_of_dicts):
+                    with cols_list[i % 4]: 
+                        parfum_karti_goster(p_dict, is_base=False)
+
+            # SENARYO 3: HİÇBİR ŞEY BULUNAMADI
+            else:
+                st.warning(f"'{arama_terimi}' ile eşleşen hiçbir parfüm (kod, isim veya nota) bulunamadı.")
+        else:
+            st.error("Lütfen arama yapmak için bir terim girin.")
+
+# --- KODUN SONU ---
