@@ -6,9 +6,7 @@ import os
 import pandas as pd
 import numpy as np
 
-# --- ADIM 1: VERİTABANI (v4.0 - stokta_mi ALANI EKLENDİ) ---
-# "stokta_mi: true" -> Bizim satılık kodlu ürünlerimiz (119 adet)
-# "stokta_mi: false" -> Müşterinin arayabileceği, notalarını bildiğimiz popüler parfümler (Örnek 5 adet eklendi)
+# --- ADIM 1: VERİTABANI (v4.2 - Yeni stok dışı parfüm eklendi) ---
 parfum_veritabani_json = """
 [
   {
@@ -1029,6 +1027,14 @@ parfum_veritabani_json = """
     "kategori": "Amber, Çiçeksi, Gurme",
     "notalar": ["Badem", "Kahve", "Sümbülteber", "Yasemin", "Tonka Fasulyesi", "Kakao", "Vanilya", "Sandal Ağacı"],
     "stokta_mi": false
+  },
+  {
+    "kod": "S-006",
+    "orijinal_ad": "Givenchy Hot Couture (EDP)",
+    "cinsiyet": "Kadın",
+    "kategori": "Çiçeksi, Meyveli, Baharatlı",
+    "notalar": ["Ahududu", "Bergamot", "Portakal", "Biber", "Vetiver", "Manolya", "Sandal Ağacı", "Amber", "Misk"],
+    "stokta_mi": false
   }
 ]
 """
@@ -1192,12 +1198,12 @@ def parfum_karti_goster(p, is_base=False):
         st.markdown(f"<p style='font-size:11px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'][:5])}...</p>", unsafe_allow_html=True)
 
 
-# --- ADIM 3: ANA ARAYÜZ (v4.1) ---
+# --- ADIM 3: ANA ARAYÜZ (v4.2) ---
 
 st.set_page_config(page_title="Lorinna Koku Rehberi", layout="wide", page_icon="✨")
 
 # Dikey sıkıştırma için başlığı minimal ve yukarıda tutma
-st.markdown("<h1 style='text-align: center; margin-bottom: 0px; padding-top: 5px;'>✨ Lorinna Koku Rehberi (v4.1)</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; margin-bottom: 0px; padding-top: 5px;'>✨ Lorinna Koku Rehberi (v4.2)</h1>", unsafe_allow_html=True)
 stokta_olan_sayisi = len(db_df[db_df['stokta_mi']==True])
 toplam_sayi = len(db_df)
 st.markdown(f"<p style='text-align: center; margin-top: 0px; margin-bottom: 20px;'>{stokta_olan_sayisi} adet stoklu parfüm | Toplam {toplam_sayi} parfüm hafızada</p>", unsafe_allow_html=True)
