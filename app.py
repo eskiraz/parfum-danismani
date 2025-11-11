@@ -4,6 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import json
 import os 
 import pandas as pd
+import numpy as np
 
 # --- ADIM 1: VERİTABANI (v4.0 - stokta_mi ALANI EKLENDİ) ---
 # "stokta_mi: true" -> Bizim satılık kodlu ürünlerimiz (119 adet)
@@ -1031,7 +1032,7 @@ parfum_veritabani_json = """
   }
 ]
 """
-# --- ADIM 2: FONKSİYONLAR ve MOTOR (v4.0) ---
+# --- ADIM 2: FONKSİYONLAR ve MOTOR (v4.1) ---
 
 # *** YEREL DOSYA YOLU ***
 ERKEK_YOLU = "resimler/erkek.jpg"
@@ -1068,27 +1069,44 @@ def benzerlik_motorunu_hazirla(df):
     return skor_df, df # Güncellenmiş df'i (notalar_str ile) geri döndür
 
 # Motoru çalıştır
-skor_matrisi_df, db_df = benzerlik_motorunu_hazirla(db_df)
+skor_matrisi_df, db_df = benzerlik_motorunu_hazirla(db_df.copy())
 
-# Fonksiyon: Ana Arama ve Öneri Fonksiyonu (v4.0)
+# Fonksiyon: Ana Arama ve Öneri Fonksiyonu (v4.1 - GÜNCELLENDİ)
 def akilli_arama_ve_oneri(arama_terimi, df, skor_df, top_n=3):
     arama_terimi_lower = arama_terimi.lower().strip()
     
-    # 1. Parfümü 'kod' veya 'orijinal_ad' ile tam/kısmi olarak bul
-    # Önce kodda ara
+    # 1. Parfümü 'kod' veya 'orijinal_ad' ile bul
+    
+    # Önce kodda tam eşleşme ara
     sonuc = df[df['kod'].str.lower() == arama_terimi_lower]
     
-    # Kodda bulunamazsa, ad içinde ara
+    # Kodda bulunamazsa, ad içinde ara (v4.1 GÜNCELLEMESİ)
     if sonuc.empty:
-        sonuc = df[df['orijinal_ad'].str.lower().str.contains(arama_terimi_lower)]
+        # 'contains' (içerir) ile tüm potansiyel eşleşmeleri bul
+        sonuc_contains = df[df['orijinal_ad'].str.lower().str.contains(arama_terimi_lower)]
         
-    # Eğer birden fazla bulursa, ilkini al
+        if not sonuc_contains.empty:
+            if len(sonuc_contains) > 1:
+                # BİRDEN FAZLA EŞLEŞME VARSA (örn: "Dior Sauvage" hem "Elixir" hem "EDT" buldu)
+                # Aranan terime en yakın (en kısa) olanı seç
+                
+                # Uzunluk farklarını hesapla
+                uzunluk_farklari = sonuc_contains['orijinal_ad'].str.len() - len(arama_terimi_lower)
+                
+                # En düşük (sıfıra en yakın) uzunluk farkına sahip olanın index'ini al
+                en_yakin_index = uzunluk_farklari.abs().idxmin()
+                sonuc = df.loc[[en_yakin_index]]
+            else:
+                # Sadece bir tane bulunduysa onu kullan
+                sonuc = sonuc_contains
+        
+    # Eğer bir 'baz parfüm' bulunduysa (sonuc doluysa)
     if not sonuc.empty:
         baz_parfum_index = sonuc.index[0]
         baz_parfum = df.loc[baz_parfum_index]
         
         # 2. Skorları al
-        skorlar = skor_df[baz_parfum_index]
+        skorlar = skor_df.loc[baz_parfum_index]
         
         # 3. Sadece 'Stokta Olan' parfümleri filtrele
         stoktaki_parfumler_df = df[df['stokta_mi'] == True]
@@ -1115,10 +1133,11 @@ def akilli_arama_ve_oneri(arama_terimi, df, skor_df, top_n=3):
     stoktaki_df = df[df['stokta_mi'] == True].copy()
     
     def nota_icerir(satir, terimler):
+        # notalar_str zaten küçük harf olmalı ama garantiye alalım
         aranacak_metin = (
             str(satir['cinsiyet']).lower() + " " +
             str(satir['kategori']).lower() + " " +
-            satir['notalar_str'].lower()
+            str(satir['notalar_str']).lower()
         )
         return all(terim in aranacak_metin for terim in terimler)
 
@@ -1132,6 +1151,8 @@ def akilli_arama_ve_oneri(arama_terimi, df, skor_df, top_n=3):
 
 # Fonksiyon: Parfüm kartını göster (v4.0)
 def parfum_karti_goster(p, is_base=False):
+    # 'p' bir dict mi yoksa Series mi kontrol et (Pandas'tan dict'e çevrildi)
+    
     # Stokta olmayanlar için STOK_YOK_YOLU'nu kullan
     if not p['stokta_mi']:
         resim_yolu_to_display = STOK_YOK_YOLU
@@ -1171,12 +1192,12 @@ def parfum_karti_goster(p, is_base=False):
         st.markdown(f"<p style='font-size:11px; line-height: 1.1;'>Notalar: {', '.join(p['notalar'][:5])}...</p>", unsafe_allow_html=True)
 
 
-# --- ADIM 3: ANA ARAYÜZ (v4.0) ---
+# --- ADIM 3: ANA ARAYÜZ (v4.1) ---
 
 st.set_page_config(page_title="Lorinna Koku Rehberi", layout="wide", page_icon="✨")
 
 # Dikey sıkıştırma için başlığı minimal ve yukarıda tutma
-st.markdown("<h1 style='text-align: center; margin-bottom: 0px; padding-top: 5px;'>✨ Lorinna Koku Rehberi (v4.0)</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; margin-bottom: 0px; padding-top: 5px;'>✨ Lorinna Koku Rehberi (v4.1)</h1>", unsafe_allow_html=True)
 stokta_olan_sayisi = len(db_df[db_df['stokta_mi']==True])
 toplam_sayi = len(db_df)
 st.markdown(f"<p style='text-align: center; margin-top: 0px; margin-bottom: 20px;'>{stokta_olan_sayisi} adet stoklu parfüm | Toplam {toplam_sayi} parfüm hafızada</p>", unsafe_allow_html=True)
@@ -1201,7 +1222,6 @@ with col_results_area:
         if arama_terimi:
             
             # 1. Akıllı Arama Fonksiyonunu Çağır
-            # Hata ayıklama için notaları da alalım
             baz_parfum_serisi, oneriler_list_of_dicts = akilli_arama_ve_oneri(arama_terimi, db_df, skor_matrisi_df, top_n=3)
             
             # baz_parfum bir pandas Serisi olabilir, onu dict'e çevirelim
