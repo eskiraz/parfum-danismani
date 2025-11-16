@@ -1,25 +1,36 @@
-# BU KODU app.py DOSYASINA YAPIŞTIRIN (v7.2 - Stabil Versiyon)
-# Bu kod sadece stok verisini (122 parfüm) kullanarak uygulamayı hemen açar.
+# BU KODU app.py DOSYASINA YAPIŞTIRIN (v7.3 - Final Hata Toleranslı Versiyon)
 
 import streamlit as st
 import pandas as pd
 import json
 import re
 
+# --- YARDIMCI GÜVENLİK FONKSİYONU ---
+def safe_eval(text):
+    """Eval komutunun hata vermesi durumunda boş string döndürür."""
+    try:
+        return ' '.join(eval(text)).lower()
+    except:
+        return ""
+
 # --- 0. SABİT VERİLERİ YÜKLEME ---
 @st.cache_resource
 def load_data_reversion():
     try:
-        # Sadece Stok Verisini Yükle (70K veriyi yüklemez!)
         stok_db = pd.read_csv("stok_listesi_clean.csv")
         stok_db = stok_db.rename(columns={'orijinal_ad': 'isim'})
-        stok_db['notalar_str'] = stok_db['notalar'].apply(lambda x: ' '.join(eval(x)).lower())
+        
+        # Tehlikeli eval() yerine güvenli fonksiyonu kullan
+        stok_db['notalar_str'] = stok_db['notalar'].apply(safe_eval)
         
         return stok_db
 
     except FileNotFoundError:
         st.error("HATA: Gerekli 'stok_listesi_clean.csv' dosyası bulunamadı.")
         st.error("Lütfen veritabanı dosyasının klasörde olduğundan emin olun.")
+        st.stop()
+    except Exception as e:
+        st.error(f"Veri Yükleme Hatası: {e}. Dosya bozuk olabilir.")
         st.stop()
 
 stok_df = load_data_reversion()
@@ -40,6 +51,7 @@ def display_stok_card(parfum_serisi):
     with col1:
         st.markdown(f"**Kategori:** {parfum_serisi['kategori']}")
         st.markdown(f"**Cinsiyet:** {parfum_serisi['cinsiyet']}")
+        # Notlar gösterilirken de güvenli eval kullanılır
         try:
             not_listesi = eval(parfum_serisi['notalar'])
             st.markdown(f"**Ana Notalar:** {', '.join(not_listesi[:5])}...")
@@ -52,7 +64,7 @@ def display_stok_card(parfum_serisi):
 # --- 5. KULLANICI ARAYÜZÜ ---
 
 st.title("👃 LRN Koku Rehberi (Stabil Sürüm)")
-st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. Büyük veritabanı devre dışı.")
+st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (Hata Toleranslı Sürüm)")
 
 tab1, tab2 = st.tabs(["🌟 Stok Arama", "📚 Koku Sözlüğü"])
 
