@@ -1,4 +1,4 @@
-# BU KODU app.py DOSYASINA YAPIŞTIRIN (v7.3 - Final Hata Toleranslı Versiyon)
+# BU KODU app.py DOSYASINA YAPIŞTIRIN (v7.4 - v4.2 + Arama Geçmişi)
 
 import streamlit as st
 import pandas as pd
@@ -6,43 +6,51 @@ import json
 import re
 
 # --- YARDIMCI GÜVENLİK FONKSİYONU ---
+# Notaları güvenli bir şekilde listeye çevirir.
 def safe_eval(text):
-    """Eval komutunun hata vermesi durumunda boş string döndürür."""
     try:
+        # Tırnakları, parantezleri temizleyip kelime listesi döndürür
+        text = str(text).strip()
+        if not text.startswith('[') and not text.endswith(']'):
+            # Eğer liste formatında değilse basitçe string olarak döndür
+            return text.lower()
         return ' '.join(eval(text)).lower()
     except:
         return ""
 
-# --- 0. SABİT VERİLERİ YÜKLEME ---
+# --- 0. OTURUM DURUMU (SESSION STATE) BAŞLATMA ---
+if 'search_history' not in st.session_state:
+    st.session_state.search_history = []
+if 'search_query' not in st.session_state:
+    st.session_state.search_query = ""
+
+# --- 1. VERİ YÜKLEME ---
 @st.cache_resource
-def load_data_reversion():
+def load_data_v4():
     try:
+        # Sadece Stok Verisini Yükle (RAM dostu)
         stok_db = pd.read_csv("stok_listesi_clean.csv")
         stok_db = stok_db.rename(columns={'orijinal_ad': 'isim'})
         
-        # Tehlikeli eval() yerine güvenli fonksiyonu kullan
-        stok_db['notalar_str'] = stok_db['notalar'].apply(safe_eval)
+        # Notları düz metin araması için hazırla
+        stok_db['search_content'] = stok_db['isim'] + ' ' + stok_db['kategori'] + ' ' + stok_db['cinsiyet'] + ' ' + stok_db['notalar'].apply(safe_eval)
         
         return stok_db
 
     except FileNotFoundError:
         st.error("HATA: Gerekli 'stok_listesi_clean.csv' dosyası bulunamadı.")
-        st.error("Lütfen veritabanı dosyasının klasörde olduğundan emin olun.")
-        st.stop()
-    except Exception as e:
-        st.error(f"Veri Yükleme Hatası: {e}. Dosya bozuk olabilir.")
         st.stop()
 
-stok_df = load_data_reversion()
+stok_df = load_data_v4()
 
-# --- 1. SAYFA AYARLARI ---
+# --- 2. SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="LRN Koku Rehberi (Stabil Sürüm)",
+    page_title="LRN Koku Rehberi v7.4 (Arama Geçmişli Stabil Sürüm)",
     page_icon="👃",
     layout="wide"
 )
 
-# --- YARDIMCI FONKSİYON ---
+# --- 3. YARDIMCI FONKSİYONLAR ---
 def display_stok_card(parfum_serisi):
     """Stoktaki bir parfümü (LRN Kodu) kart olarak gösterir."""
     st.markdown(f"#### **{parfum_serisi['kod']}** ({parfum_serisi['isim']})")
@@ -51,8 +59,8 @@ def display_stok_card(parfum_serisi):
     with col1:
         st.markdown(f"**Kategori:** {parfum_serisi['kategori']}")
         st.markdown(f"**Cinsiyet:** {parfum_serisi['cinsiyet']}")
-        # Notlar gösterilirken de güvenli eval kullanılır
         try:
+            # Notaları güvenli bir şekilde gösterir
             not_listesi = eval(parfum_serisi['notalar'])
             st.markdown(f"**Ana Notalar:** {', '.join(not_listesi[:5])}...")
         except:
@@ -61,42 +69,76 @@ def display_stok_card(parfum_serisi):
     with col2:
         st.button("Satın Al >", key=f"buy_{parfum_serisi['kod']}")
 
+# --- 4. ARAMA MOTORU (Basit Metin Araması) ---
+def simple_search(search_term, gender_filter):
+    search_term = search_term.lower().strip()
+    
+    # Geçmişe kaydetme
+    if search_term and search_term not in [h.lower() for h in st.session_state.search_history]:
+        st.session_state.search_history.insert(0, search_term)
+        st.session_state.search_history = st.session_state.search_history[:5]
+    
+    # 1. Metin araması (isim, kategori, nota içeriği)
+    search_results = stok_df[
+        stok_df['search_content'].str.contains(search_term, case=False, na=False)
+    ]
+    
+    # 2. Cinsiyet filtresi
+    if gender_filter != "Tümü":
+        search_results = search_results[search_results['cinsiyet'] == gender_filter]
+        
+    return search_results.head(10) # En fazla 10 sonuç göster
+
 # --- 5. KULLANICI ARAYÜZÜ ---
 
-st.title("👃 LRN Koku Rehberi (Stabil Sürüm)")
-st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (Hata Toleranslı Sürüm)")
+st.title("👃 LRN Koku Rehberi v7.4 (Arama Geçmişli Stabil Sürüm)")
+st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (Sadece stok verisi kullanılmaktadır)")
 
-tab1, tab2 = st.tabs(["🌟 Stok Arama", "📚 Koku Sözlüğü"])
+st.header("🌟 Stok Arama Motoru")
+st.markdown("Aradığınız parfümün adını, notayı (`odunsu`, `vanilya`) veya kategoriyi (`Floral`) girin.")
 
-# --- SEKME 1: STOK ARAMA (MÜŞTERİ İÇİN KATEGORİ) ---
-with tab1:
-    st.header("Kategoriye Göre Arama")
-    st.markdown("Müşterinizin sorduğu ana notayı veya kategoriyi seçin.")
+# --- Arama Formu ---
+col1, col2, col3 = st.columns([3, 1, 1])
+
+with col1:
+    # Arama Geçmişi ile bağlanacak arama kutusu
+    search_query = st.text_input("Arama Kutusu", placeholder="örn: vanilya veya Baccarat", key="current_search_query")
     
-    # Tüm kategorileri al
-    all_categories = sorted(stok_df['kategori'].unique())
-    all_categories.insert(0, "--- Hepsi ---")
+with col2:
+    gender_choice = st.selectbox("Cinsiyet Filtresi", ["Tümü", "Kadın", "Erkek", "Unisex"], key="main_gender_filter")
 
-    search_category = st.selectbox("Kategori Seçin", all_categories)
+with col3:
+    if st.button("Geçmişi Temizle", help="Arama geçmişini temizler"):
+        st.session_state.search_history = []
+        st.session_state.current_search_query = "" # Arama kutusunu da temizle
+        st.rerun()
+
+# --- Arama Geçmişi Bölümü ---
+search_triggered = False
+if st.session_state.search_history:
+    with st.expander("Son Aramalarınız"):
+        history_cols = st.columns(len(st.session_state.search_history))
+        for i, query in enumerate(st.session_state.search_history):
+            # Geçmiş butonuna basıldığında arama kutusunu güncelle
+            if history_cols[i].button(query, key=f"hist_{query}"):
+                st.session_state.current_search_query = query
+                search_triggered = True
+
+# --- Arama Tetikleme ---
+if st.button("Koku Bul", type="primary") or search_triggered:
+    final_query = st.session_state.current_search_query
     
-    if search_category != "--- Hepsi ---":
-        result_df = stok_df[stok_df['kategori'] == search_category]
-        st.subheader(f"'{search_category}' Kategorisindeki Ürünler ({len(result_df)} adet):")
+    if len(final_query) < 2:
+        st.warning("Lütfen en az 2 harf girin.")
+    else:
+        results = simple_search(final_query, st.session_state.main_gender_filter)
         
-        for index, row in result_df.iterrows():
-            with st.container(border=True):
-                display_stok_card(row)
-
-# --- SEKME 2: KOKU SÖZLÜĞÜ (MÜŞTERİ İÇİN BİLGİ) ---
-with tab2:
-    st.header("📚 Koku Aileleri Sözlüğü")
-    st.markdown("Müşterilerinize temel koku aileleri hakkında bilgi vermek için kullanın. (Odunsu, Pudralı, vb.)")
-
-    with st.expander("**Odunsu (Woody)**"):
-        st.write("Sandal ağacı, sedir ağacı, paçuli ve vetiver gibi ağaç notalarının belirgin olduğu aile. Genellikle maskülen parfümlerde kullanılsa da unisex ve feminen parfümlerde de sıkça rastlanır.")
+        st.divider()
+        st.subheader(f"'{final_query}' Araması İçin Seçtiklerimiz ({len(results)} adet):")
         
-    with st.expander("**Pudralı (Powdery)**"):
-        st.write("İris, vanilya, misk ve tonka fasulyesi gibi notaların yumuşak, bebek pudrası veya kozmetik hissiyatı verdiği aile. Kadın ve unisex parfümlerde sıkça kullanılır.")
-
-    with st.expander("**Çiçeksi (Floral)**"):
-        st.write("Gül, yasemin, zambak, leylak gibi çiçek notalarının hakim olduğu, en popüler koku ailesidir. Genellikle feminen bir karakter taşır.")
+        if results.empty:
+            st.error(f"Üzgünüz, '{final_query}' aramasıyla eşleşen bir ürün bulunamadı.")
+        else:
+            for index, row in results.iterrows():
+                with st.container(border=True):
+                    display_stok_card(row)
