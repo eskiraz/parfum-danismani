@@ -1,100 +1,85 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v6.1 - DOM Hata Giderici)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v7.1 - İndirgenmiş Matris Okuyucu)
 
 import streamlit as st
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+import joblib 
+from sklearn.metrics.pairwise import cosine_similarity # Nota araması için hala gerekli
 import numpy as np
 import re
 
 # --- 0. OTURUM DURUMU (SESSION STATE) BAŞLATMA ---
-# Arama geçmişini tutmak için
 if 'search_history' not in st.session_state:
     st.session_state.search_history = []
 
 # --- 1. SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="LRN Koku Rehberi v6.1 (Stabilite Fix)",
+    page_title="LRN Koku Rehberi v7.1 (Final Fix)",
     page_icon="👃",
     layout="wide"
 )
 
-# --- 2. VERİ YÜKLEME VE İŞLEME ---
+# --- 2. VERİ YÜKLEME VE MODELİ YÜKLEME ---
 @st.cache_resource
 def load_data():
-    print("Veri yükleniyor ve model (koku evreni) oluşturuluyor...")
+    print("Önceden hesaplanmış model dosyaları yükleniyor...")
     try:
-        # 1. Ana Veritabanını (68k) Yükle
-        ana_db = pd.read_csv("ana_db_clean.csv")
-        ana_db = ana_db.rename(columns={'Parfüm İsmi': 'isim', 'cinsiyet': 'cinsiyet'})
-        ana_db['tip'] = 'Original'
-        ana_db = ana_db[['isim', 'cinsiyet', 'notalar_str', 'tip', 'aciklama']]
+        # Modelleri yükle
+        cosine_sim_reduced = joblib.load('cosine_sim_reduced.pkl') # YENİ VE İNDİRGENMİŞ MATRİS
+        vectorizer = joblib.load('vectorizer.pkl')
+        all_perfumes_df = joblib.load('all_perfumes_df.pkl')
+        stock_indices = joblib.load('stock_indices.pkl') # Stok listesinin indexleri
         
-        # 2. Stok Veritabanını (122) Yükle
-        stok_db = pd.read_csv("stok_listesi_clean.csv")
-        stok_db = stok_db.rename(columns={'orijinal_ad': 'isim', 'cinsiyet': 'cinsiyet'})
-        stok_db['tip'] = 'Stok'
-        
-        # 3. İki veritabanını birleştir (Tek bir "koku evreni" için)
-        all_perfumes = pd.concat([
-            ana_db[['isim', 'cinsiyet', 'notalar_str', 'tip']],
-            stok_db[['isim', 'cinsiyet', 'notalar_str', 'tip']]
-        ], ignore_index=True)
-        
-        # 'cinsiyet' sütunundaki olası NaN (boş) değerleri 'Unisex' ile doldur
-        all_perfumes['cinsiyet'] = all_perfumes['cinsiyet'].fillna('Unisex')
-        
-        # 4. Makine Öğrenimi Modelini (TF-IDF Vectorizer) Kur
-        # 'notalar_str' sütunundaki boş (NaN) değerleri temizle
-        all_perfumes['notalar_str'] = all_perfumes['notalar_str'].fillna('')
-        
-        vectorizer = CountVectorizer(min_df=2, max_df=0.8) # Notaları vektöre dönüştürür
-        koku_matrix = vectorizer.fit_transform(all_perfumes['notalar_str'])
-        
-        # 5. Benzerlik Matrisini (Cosine Similarity) Oluştur
-        cosine_sim = cosine_similarity(koku_matrix, koku_matrix)
-        
-        print("Model hazırlandı. (Toplam: {} parfüm)".format(len(all_perfumes)))
-        
-        return all_perfumes, ana_db, stok_db, cosine_sim, vectorizer
+        # Stok ve Ana DB'yi de ayır (Kart gösterme için)
+        stok_db_df = pd.read_csv("stok_listesi_clean.csv")
+        ana_db_df = pd.read_csv("ana_db_clean.csv")
 
-    except FileNotFoundError as e:
-        st.error(f"HATA: Gerekli .csv dosyası bulunamadı. '{e.filename}'")
-        st.error("Lütfen 'py islem.py' komutunu çalıştırdığınızdan ve .csv dosyalarının oluştuğundan emin olun.")
+        # Stok parfümlerinin isimlerini DataFrame'den çek
+        stock_perfumes_df = all_perfumes_df.iloc[stock_indices].reset_index(drop=True)
+
+        print("Model hazırlandı. Uygulama başlatılıyor.")
+        
+        return all_perfumes_df, ana_db_df, stok_db_df, cosine_sim_reduced, vectorizer, stock_perfumes_df
+
+    except FileNotFoundError:
+        st.error("HATA: Model dosyaları (.pkl) bulunamadı.")
+        st.error("Lütfen 'py model_olustur.py' komutunu çalıştırdığınızdan ve .pkl dosyalarını GitHub'a yüklediğinizden emin olun.")
         st.stop()
     except Exception as e:
-        st.error(f"Veri yüklenirken kritik bir hata oluştu: {e}")
+        st.error(f"Kritik Model Yükleme Hatası: {e}")
         st.stop()
 
 # Veri ve Modeli Yükle
-all_perfumes_df, ana_db_df, stok_db_df, cosine_sim_matrix, vectorizer = load_data()
-
+all_perfumes_df, ana_db_df, stok_db_df, cosine_sim_reduced_matrix, vectorizer, stock_perfumes_df = load_data()
 
 # --- 3. YARDIMCI FONKSİYONLAR (KART GÖSTERİMİ) ---
 
 def display_stok_card(parfum_serisi):
     """Stoktaki bir parfümü (LRN Kodu) kart olarak gösterir."""
-    st.markdown(f"#### **{parfum_serisi['kod']}** ({parfum_serisi['isim']})")
+    # Stoktaki ürünün kodunu stok_db_df'ten bul
+    stok_kod = stok_db_df[stok_db_df['isim'] == parfum_serisi['isim']].iloc[0]['kod']
+    stok_kategori = stok_db_df[stok_db_df['isim'] == parfum_serisi['isim']].iloc[0]['kategori']
+    stok_notalar = stok_db_df[stok_db_df['isim'] == parfum_serisi['isim']].iloc[0]['notalar']
+    
+    st.markdown(f"#### **{stok_kod}** ({parfum_serisi['isim']})")
     
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.markdown(f"**Kategori:** {parfum_serisi['kategori']}")
+        st.markdown(f"**Kategori:** {stok_kategori}")
         st.markdown(f"**Cinsiyet:** {parfum_serisi['cinsiyet']}")
         try:
-            not_listesi = eval(parfum_serisi['notalar'])
+            not_listesi = eval(stok_notalar)
             st.markdown(f"**Ana Notalar:** {', '.join(not_listesi[:5])}...")
         except:
              st.markdown(f"**Ana Notalar:** Notalar bulunamadı.")
     
     with col2:
-        st.button("Satın Al >", key=f"buy_{parfum_serisi['kod']}")
+        st.button("Satın Al >", key=f"buy_{stok_kod}")
 
 def display_original_card(parfum_serisi):
     """Stokta olmayan (Orijinal) bir parfümü kart olarak gösterir."""
     st.info(f"**Aradığınız Parfüm: {parfum_serisi['isim']}** ({parfum_serisi['cinsiyet']})")
     st.markdown("Bu parfüm stoklarımızda bulunmamaktadır. Size en çok benzeyen stoktaki parfümlerimizi aşağıda listeledik:")
     
-    # 'aciklama' verisini ana_db_df'den çek
     aciklama_row = ana_db_df[ana_db_df['isim'] == parfum_serisi['isim']]
     if not aciklama_row.empty and 'aciklama' in aciklama_row.columns:
         aciklama = aciklama_row.iloc[0]['aciklama']
@@ -105,92 +90,94 @@ def display_original_card(parfum_serisi):
 # --- 4. BENZERLİK BULMA MOTORU (ANA BEYİN) ---
 
 def find_similar(search_term, gender_filter="Tümü"):
-    """
-    Ana Arama Motoru. İsimle veya notayla arama yapar.
-    """
     
-    # --- Arama Geçmişine Ekleme ---
     if search_term and search_term.lower() not in [h.lower() for h in st.session_state.search_history]:
         st.session_state.search_history.insert(0, search_term)
         st.session_state.search_history = st.session_state.search_history[:5]
-    # -------------------------------
-
-
-    # 1. Arama Terimi İsim Listesinde Var mı? (Parfüm Adı Araması)
+    
+    recommendations = []
+    
+    # 1. Parfüm Adı Araması (Tüm Evrende Ara)
     match = all_perfumes_df[all_perfumes_df['isim'].str.contains(search_term, case=False, flags=re.IGNORECASE)]
     
     if not match.empty:
         found_perfume = match.iloc[0]
-        perfume_index = found_perfume.name
+        perfume_index = found_perfume.name # 70k'lık büyük indekste nerede?
         
-        # Kartı göster
+        # Eğer stokta varsa direkt göster
         if found_perfume['tip'] == 'Stok':
-            stok_row = stok_db_df[stok_db_df['isim'] == found_perfume['isim']].iloc[0]
             st.success("**Aradığınız Parfüm Stoklarımızda Mevcut!**")
-            display_stok_card(stok_row)
+            display_stok_card(found_perfume)
             return
-        else:
-            display_original_card(found_perfume)
 
-        # Benzerlik skorlarını al
-        sim_scores = list(enumerate(cosine_sim_matrix[perfume_index]))
-        sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+        # Benzerlik skorlarını al (70k'lık satırdan 122 kolonluk skorları alır)
+        sim_scores_122 = list(enumerate(cosine_sim_reduced_matrix[perfume_index]))
+        sim_scores_122 = sorted(sim_scores_122, key=lambda x: x[1], reverse=True) # Stok listesi indeksine göre sıralı
         
-        # Sadece STOKTA olanları ve kendine benzemeyenleri filtrele
-        recommendations = []
-        for i, score in sim_scores[1:]:
-            if all_perfumes_df.iloc[i]['tip'] == 'Stok':
-                if gender_filter == "Tümü" or all_perfumes_df.iloc[i]['cinsiyet'] == gender_filter:
-                    recommendations.append(i)
-            if len(recommendations) >= 5:
-                break
+        display_original_card(found_perfume)
+
+        # En iyi 5 stok parfümü filtrele
+        for stock_sim_index, score in sim_scores_122:
+             if score > 0.0:
+                 # stock_sim_index: 0 ile 121 arasındaki indeks
+                 recommended_parfum = stock_perfumes_df.iloc[stock_sim_index]
+                 
+                 if gender_filter == "Tümü" or recommended_parfum['cinsiyet'] == gender_filter:
+                     recommendations.append(recommended_parfum)
+             
+             if len(recommendations) >= 5:
+                 break
         
         return recommendations
 
     else:
-        # 2. Eşleşme bulunamadı (Nota/Hissiyat Araması)
+        # 2. Nota/Hissiyat Araması
         st.warning(f"**'{search_term}'** adında bir parfüm bulunamadı. Nota/Hissiyat olarak arama yapılıyor...")
         
         try:
-            search_vector = vectorizer.transform([search_term])
-            nota_sim_scores = cosine_similarity(search_vector, cosine_sim_matrix.T)
-            stok_indices = all_perfumes_df[all_perfumes_df['tip'] == 'Stok'].index
+            search_vector = vectorizer.transform([search_term]) # Arama terimini vektöre dönüştür
             
-            stok_scores = []
-            for i in stok_indices:
-                if gender_filter == "Tümü" or all_perfumes_df.iloc[i]['cinsiyet'] == gender_filter:
-                    stok_scores.append( (i, nota_sim_scores[0][i]) )
+            # Sadece stok parfümlerinin matrixini elde et (cosine_sim_reduced'ın kolonları)
+            koku_matrix_stock_only = cosine_sim_reduced_matrix[stock_perfumes_df.index, :]
+
+            # Arama vektörünün stok parfümlerine benzerliğini hesapla (1 x 122)
+            nota_sim_scores_122 = cosine_similarity(search_vector, koku_matrix_stock_only) 
             
-            stok_scores = sorted(stok_scores, key=lambda x: x[1], reverse=True)
+            # Skorları sırala
+            stock_scores = list(enumerate(nota_sim_scores_122[0]))
+            stock_scores = sorted(stock_scores, key=lambda x: x[1], reverse=True)
             
-            recommendations = [i for i in stok_scores[:5] if i[1] > 0.0]
-            recommendations = [i[0] for i in recommendations]
+            
+            for stock_sim_index, score in stock_scores:
+                if score > 0.0:
+                    recommended_parfum = stock_perfumes_df.iloc[stock_sim_index]
+                    
+                    if gender_filter == "Tümü" or recommended_parfum['cinsiyet'] == gender_filter:
+                        recommendations.append(recommended_parfum)
+
+                if len(recommendations) >= 5:
+                    break
+            
             return recommendations
 
-        except Exception:
+        except Exception as e:
+            # st.error(f"Nota arama hatası: {e}") # Hata gösterimini kapattık
             return []
 
 
 # --- 5. KULLANICI ARAYÜZÜ (STREAMLIT) ---
 
-st.title("👃 LRN Koku Rehberi v6.1 (Stabilite Fix)")
-st.markdown(f"**Toplam {len(ana_db_df)}** orijinal parfüm ve **{len(stok_db_df)}** LRN parfümü içeren Koku Evreni.")
+st.title("👃 LRN Koku Rehberi v7.1 (Final Fix)")
+st.markdown(f"**Toplam {len(all_perfumes_df)}** parfüm içeren Koku Evreni.")
 
-# --- SEKMELİ YAPI ---
-tab1, tab2, tab3, tab4 = st.tabs([
-    "🌟 Akıllı Arama Motoru", 
-    "📚 Koku Sözlüğü", 
-    "🔎 Popüler Notaları Keşfet", 
-    "🔥 LRN Vitrin"
-])
+tab1, tab2, tab3, tab4 = st.tabs(["🌟 Akıllı Arama Motoru", "📚 Koku Sözlüğü", "🔎 Popüler Notaları Keşfet", "🔥 LRN Vitrin"])
 
+# ... (Kullanıcı arayüzü kısmı aynı kalır) ...
 
-# --- SEKME 1: AKILLI ARAMA MOTORU ---
 with tab1:
     st.header("Akıllı Arama Motoru")
     st.markdown("Aradığınız orijinal parfümün adını (örn: `Creed Aventus`) veya sevdiğiniz bir notayı (örn: `vanilya`) yazın.")
     
-    # Sonuçların gösterileceği alanı izole et
     results_container = st.empty()
     
     col1, col2, col3 = st.columns([3, 1, 1])
@@ -206,7 +193,6 @@ with tab1:
 
     search_triggered = False
     
-    # Arama Geçmişini Göster
     if st.session_state.search_history:
         with st.expander("Son Aramalarınız"):
             history_cols = st.columns(len(st.session_state.search_history))
@@ -216,35 +202,26 @@ with tab1:
                     search_triggered = True
 
     
-    # Arama butonuna basıldıysa VEYA geçmiş aramaya tıklanıp search_triggered = True ise
     if st.button("Koku Bul", type="primary") or search_triggered:
         final_query = st.session_state.main_search_query
         
         if len(final_query) < 2:
             st.warning("Lütfen en az 2 harf girin.")
         else:
-            # ARAMA MOTORUNU ÇALIŞTIR
-            recommended_indices = find_similar(final_query, st.session_state.main_gender_filter)
+            recommended_parfumes = find_similar(final_query, st.session_state.main_gender_filter)
             
             with results_container.container():
                 st.divider()
                 
-                if not recommended_indices:
+                if not recommended_parfumes:
                     st.error(f"Üzgünüz, '{final_query}' aramasıyla eşleşen veya benzeyen stokta bir ürün bulamadık.")
                 else:
                     st.subheader(f"'{final_query}' Araması İçin Seçtiklerimiz:")
-                    for index in recommended_indices:
-                        parfum_ismi = all_perfumes_df.iloc[index]['isim']
-                        stok_row_list = stok_db_df[stok_db_df['isim'] == parfum_ismi]
-                        if not stok_row_list.empty:
-                            stok_row = stok_row_list.iloc[0]
-                            with st.container(border=True):
-                                display_stok_card(stok_row)
-                        else:
-                            st.warning(f"Stok bilgisi bulunamadı: {parfum_ismi}")
+                    for parfum_row in recommended_parfumes:
+                        with st.container(border=True):
+                            display_stok_card(parfum_row)
 
 
-# --- SEKME 2: KOKU SÖZLÜĞÜ ---
 with tab2:
     st.header("📚 Koku Aileleri Sözlüğü")
     st.markdown("Parfüm dünyasındaki ana koku ailelerini tanıyın.")
@@ -268,7 +245,6 @@ with tab2:
         st.write("Fransızca 'eğrelti otu' anlamına gelir. Genellikle lavanta, meşe yosunu ve kumarin (tonka fasulyesi) notalarını içerir. Klasik erkek parfümlerinin temel ailelerinden biridir.")
 
 
-# --- SEKME 3: POPÜLER NOTALARI KEŞFET ---
 with tab3:
     st.header("🔎 Popüler Notaları Keşfet")
     st.markdown("Aşağıdaki popüler notalara tıklayarak, bu notaları içeren stoktaki parfümleri keşfedin.")
@@ -280,29 +256,24 @@ with tab3:
     
     for i, nota in enumerate(populer_notalar):
         col = cols[i % col_count]
-        if col.button(nota, key=f"nota_{nota}", use_container_width=True):
+        if col.button(nota, key=f"nota_{nota}"):
             st.divider()
             st.subheader(f"'{nota}' Notalı Parfümler:")
             
-            # NOTA ARAMASINI ÇALIŞTIR
-            recommended_indices = find_similar(nota, "Tümü")
+            recommended_parfumes = find_similar(nota, "Tümü")
             
-            if not recommended_indices:
+            if not recommended_parfumes:
                 st.error(f"Stoklarımızda '{nota}' içeren belirgin bir parfüm bulunamadı.")
             else:
-                for index in recommended_indices:
-                    parfum_ismi = all_perfumes_df.iloc[index]['isim']
-                    stok_row = stok_db_df[stok_db_df['isim'] == parfum_ismi].iloc[0]
+                for parfum_row in recommended_parfumes:
                     with st.container(border=True):
-                        display_stok_card(stok_row)
+                        display_stok_card(parfum_row)
 
-# --- SEKME 4: LRN VİTRİN ---
 with tab4:
     st.header("🔥 LRN Vitrin: Editörün Seçimleri")
     st.markdown("Sizin için seçtiğimiz en popüler LRN parfümleri.")
     
     try:
-        # Kodun kırılmaması için ilk 4 kodu alıyoruz
         vitrin_kodlari = stok_db_df['kod'].head(4).tolist() 
         
         if not vitrin_kodlari:
@@ -311,7 +282,20 @@ with tab4:
             for kod in vitrin_kodlari:
                 stok_row = stok_db_df[stok_db_df['kod'] == kod].iloc[0]
                 with st.container(border=True):
-                    display_stok_card(stok_row)
+                    # Stokta olanların gösterimi için yeni bir DataFrame oluşturmaya gerek yok
+                    # stok_row'u doğrudan kullanıyoruz.
+                    st.markdown(f"#### **{kod}** ({stok_row['orijinal_ad']})")
+                    col1, col2 = st.columns([1, 2])
+                    with col1:
+                        st.markdown(f"**Kategori:** {stok_row['kategori']}")
+                        st.markdown(f"**Cinsiyet:** {stok_row['cinsiyet']}")
+                        try:
+                            not_listesi = eval(stok_row['notalar'])
+                            st.markdown(f"**Ana Notalar:** {', '.join(not_listesi[:5])}...")
+                        except:
+                            st.markdown(f"**Ana Notalar:** Notalar bulunamadı.")
+                    with col2:
+                        st.button("Satın Al >", key=f"buy_vitrin_{kod}")
                     
     except Exception as e:
         st.error(f"Vitrin yüklenirken bir hata oluştu: {e}")
