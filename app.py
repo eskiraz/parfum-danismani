@@ -1,4 +1,4 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.0 - Sadece 122 Ürün)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.2 - Final Niche Logic)
 
 import streamlit as st
 import pandas as pd
@@ -7,37 +7,42 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import re
 
-# --- 0. OTURUM DURUMU (SESSION STATE) BAŞLATMA ---
+# --- 0. SABİTLER ve OTURUM DURUMU ---
+GENDER_ICONS = {
+    "Erkek": "♂️",
+    "Kadın": "♀️",
+    "Unisex": "🚻",
+    "Niche": "💎" # Yeni Niche ikonu
+}
+
 if 'search_history' not in st.session_state:
     st.session_state.search_history = []
-
-# --- 1. SAYFA AYARLARI ---
-st.set_page_config(
-    page_title="LRN Koku Rehberi v10.0 (Stabil Stok Bazlı)",
-    page_icon="👃",
-    layout="wide"
-)
 
 # --- YARDIMCI GÜVENLİK FONKSİYONU ---
 def safe_eval(text):
     """Eval komutunun hata vermesi durumunda boş listelerle başa çıkar."""
     try:
-        # String listeyi gerçek listeye çevirip notaları birleştirir
         return ' '.join(eval(str(text))).lower()
     except:
         return ""
 
+# --- 1. SAYFA AYARLARI ---
+st.set_page_config(
+    page_title="LRN Koku Rehberi v10.2 (Final)",
+    page_icon="👃",
+    layout="wide"
+)
+
 # --- 2. VERİ YÜKLEME VE MODEL OLUŞTURMA (SADECE 122 ÜRÜN) ---
 @st.cache_resource
 def load_data():
-    print("Sadece 122 ürün yükleniyor ve model oluşturuluyor...")
     try:
         # 1. Stok Veritabanını Yükle
         df = pd.read_csv("stok_listesi_clean.csv")
         df = df.rename(columns={'orijinal_ad': 'isim'})
         
-        # Notaları model için hazırla (metin tabanlı)
-        df['notalar_str'] = df['notalar'].apply(safe_eval)
+        # Notaları ve Kategori adlarını birleştir (Arama hassasiyeti için)
+        df['notalar_str'] = df['notalar'].apply(safe_eval) + ' ' + df['kategori'].str.lower()
         
         # 2. Model Kurulumu (Sadece 122 ürüne göre)
         vectorizer = CountVectorizer(min_df=1)
@@ -46,26 +51,37 @@ def load_data():
         # 3. Benzerlik Matrisi Oluştur
         cosine_sim = cosine_similarity(koku_matrix, koku_matrix)
         
-        print("Minimal Model hazırlandı. (Toplam: {} parfüm)".format(len(df)))
-        
         return df, cosine_sim, vectorizer
 
     except FileNotFoundError as e:
         st.error(f"HATA: Gerekli 'stok_listesi_clean.csv' dosyası bulunamadı.")
-        st.error("Lütfen dosyanın klasörde olduğundan emin olun.")
         st.stop()
 
-# Veri ve Modeli Yükle
 stok_df, cosine_sim_matrix, vectorizer = load_data()
 
 
 # --- 3. YARDIMCI FONKSİYONLAR (KART GÖSTERİMİ) ---
 
 def display_stok_card(parfum_serisi):
-    """Stoktaki bir parfümü kart olarak gösterir (Buton Kaldırıldı)."""
-    st.markdown(f"**{parfum_serisi['kod']}** ({parfum_serisi['isim']})")
+    """Stoktaki bir parfümü kart olarak gösterir (Niche Logiği Eklendi)."""
+    
+    # Cinsiyet ikonunu al
+    gender_icon = GENDER_ICONS.get(parfum_serisi['cinsiyet'], "🚻")
+
+    # Niche Logic: LRN kodu 200 veya altıysa Niche ikonu ekle
+    try:
+        lrn_code = int(parfum_serisi['kod'])
+        if lrn_code <= 200:
+            niche_icon = GENDER_ICONS.get("Niche")
+        else:
+            niche_icon = "" # Niche değilse boş bırak
+    except ValueError:
+        niche_icon = "" # Kod sayı değilse boş bırak
+
+    
+    # İkonlar ve kod yan yana
+    st.markdown(f"**{niche_icon} {gender_icon} {parfum_serisi['kod']}** ({parfum_serisi['isim']})")
     st.markdown(f"**Kategori:** {parfum_serisi['kategori']}")
-    st.markdown(f"**Cinsiyet:** {parfum_serisi['cinsiyet']}")
     
     # Notaları göster (Görünüm için)
     try:
@@ -77,7 +93,7 @@ def display_stok_card(parfum_serisi):
 
 # --- 4. BENZERLİK BULMA MOTORU (SADECE STOK BAZLI) ---
 
-def find_similar(search_term, gender_filter="Tümü"):
+def find_similar(search_term):
     
     if search_term and search_term.lower() not in [h.lower() for h in st.session_state.search_history]:
         st.session_state.search_history.insert(0, search_term)
@@ -86,9 +102,6 @@ def find_similar(search_term, gender_filter="Tümü"):
     recommendations = []
     
     # 1. LRN Koduna veya Orijinal Adına Göre Ana Ürünü Bulma
-    search_term_lower = search_term.lower()
-    
-    # İndeksleri isim/kod üzerinden bulma
     match = stok_df[
         (stok_df['kod'].astype(str) == search_term) | 
         (stok_df['isim'].str.contains(search_term, case=False, na=False))
@@ -96,13 +109,12 @@ def find_similar(search_term, gender_filter="Tümü"):
     
     if not match.empty:
         found_perfume = match.iloc[0]
-        perfume_index = found_perfume.name # Modeldeki indeksi
+        perfume_index = found_perfume.name
         
         # Kendisi hariç tüm benzerlik skorlarını al
         sim_scores = list(enumerate(cosine_sim_matrix[perfume_index]))
         sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
         
-        # Kendisini listelediğimiz için atla (sim_scores[1:])
         sim_scores_to_check = sim_scores[1:] 
 
         # En yakın 3 öneri
@@ -110,42 +122,39 @@ def find_similar(search_term, gender_filter="Tümü"):
         for i, score in sim_scores_to_check:
             recommended_parfum = stok_df.iloc[i]
             
-            if score > 0.0 and (gender_filter == "Tümü" or recommended_parfum['cinsiyet'] == gender_filter):
+            if score > 0.0:
                 recommendations.append(recommended_parfum)
                 count += 1
             
-            if count >= 3: # Sadece en yakın 3 koku
+            if count >= 3: 
                 break
         
-        return found_perfume, recommendations # Ana ürün ve öneri listesi
+        return found_perfume, recommendations
 
     else:
-        # 2. Nota/Hissiyat Araması
-        st.warning(f"**'{search_term}'** adında bir parfüm veya kod bulunamadı. Nota/Hissiyat olarak arama yapılıyor...")
+        # 2. Nota/Hissiyat veya Kategori Araması (örn: Çiçeksi)
+        st.warning(f"**'{search_term}'** adında bir ürün veya kod bulunamadı. Nota/Kategori araması yapılıyor...")
         
         try:
-            # Arama terimini vektöre dönüştür
             search_vector = vectorizer.transform([search_term]) 
-            
-            # Tüm stok parfümlerine benzerliğini hesapla
             nota_sim_scores = cosine_similarity(search_vector, cosine_sim_matrix.T) 
             
             stock_scores = list(enumerate(nota_sim_scores[0]))
             stock_scores = sorted(stock_scores, key=lambda x: x[1], reverse=True)
             
-            # En iyi 5 sonuçtan sadece ilk 3'ü
+            # En iyi 3 sonuç
             count = 0
             for i, score in stock_scores:
                 recommended_parfum = stok_df.iloc[i]
                 
-                if score > 0.0 and (gender_filter == "Tümü" or recommended_parfum['cinsiyet'] == gender_filter):
+                if score > 0.0:
                     recommendations.append(recommended_parfum)
                     count += 1
 
-                if count >= 3: # Sadece en yakın 3 koku
+                if count >= 3:
                     break
             
-            return None, recommendations # Ana ürün yok, sadece öneriler
+            return None, recommendations
 
         except Exception:
             return None, []
@@ -153,23 +162,20 @@ def find_similar(search_term, gender_filter="Tümü"):
 
 # --- 5. KULLANICI ARAYÜZÜ ---
 
-st.title("👃 LRN Koku Rehberi v10.0 (Stabil Stok Bazlı)")
-st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (70K veri devre dışı.)")
+st.title("👃 LRN Koku Rehberi v10.2 (Final)")
+st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (En yakın 3 kokuyu önerir.)")
 
 st.header("🌟 Stok Arama Motoru")
-st.markdown("LRN Kodunu (örn: `255`), Orijinal Adı (`Creed Aventus`) veya Notayı (`vanilya`) girin.")
+st.markdown("LRN Kodunu (`255`), Orijinal Adı (`Creed Aventus`) veya Notayı (`vanilya`, `çiçeksi`) girin.")
 
 # --- Arama Formu ---
-col1, col2, col3 = st.columns([3, 1, 1])
+col1, col2 = st.columns([3, 1])
 
 with col1:
-    search_query = st.text_input("Arama Kutusu", placeholder="örn: 255 veya odunsu", key="main_search_query")
+    search_query = st.text_input("Arama Kutusu", placeholder="örn: 255 veya çiçeksi", key="main_search_query")
     
 with col2:
-    gender_choice = st.selectbox("Cinsiyet Filtresi", ["Tümü", "Kadın", "Erkek", "Unisex"], key="main_gender_filter")
-
-with col3:
-    if st.button("Geçmişi Temizle", help="Arama geçmişini temizler"):
+    if st.button("Geçmişi Temizle", help="Arama geçmişini temizler", use_container_width=True):
         st.session_state.search_history = []
         st.rerun()
 
@@ -189,19 +195,18 @@ if st.button("Koku Bul", type="primary") or search_triggered:
     if len(final_query) < 2 and not final_query.isdigit():
         st.warning("Lütfen en az 2 harf veya geçerli bir kod girin.")
     else:
-        # ARAMA MOTORUNU ÇALIŞTIR
-        main_product, recommended_parfumes = find_similar(final_query, st.session_state.main_gender_filter)
+        main_product, recommended_parfumes = find_similar(final_query)
         
         st.divider()
 
         # 1. Ana Ürünü Listele (Varsa)
         if main_product is not None:
-             st.subheader("Aranan Ürün:")
+             st.subheader(f"Aranan Ürün: {main_product['isim']}")
              with st.container(border=True):
                  display_stok_card(main_product)
              st.divider()
 
-        # 2. Önerileri Listele
+        # 2. Önerileri Listele (Yan Yana Görüntü)
         if not recommended_parfumes:
             if main_product is None:
                 st.error(f"'{final_query}' aramasıyla eşleşen bir ürün bulunamadı.")
@@ -210,7 +215,6 @@ if st.button("Koku Bul", type="primary") or search_triggered:
         else:
             st.subheader("Size En Çok Benzeyen 3 Koku:")
             
-            # Yan Yana Sütunlarda Gösterme Mantığı
             cols = st.columns(3) # 3 sütun oluştur
             
             for i, parfum_row in enumerate(recommended_parfumes):
