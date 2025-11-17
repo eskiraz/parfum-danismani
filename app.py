@@ -1,4 +1,4 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.18 - Final Uzantı Fix'i)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.19 - Final Logo Fix'i)
 
 import streamlit as st
 import pandas as pd
@@ -6,6 +6,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import re
+import os # Yeni eklendi: Dosya yolunu daha esnek aramak için
 
 # --- 0. SABİTLER ve OTURUM DURUMU ---
 IMAGE_SIZE = 25 
@@ -15,9 +16,9 @@ ICON_MAPPING = {
     "Kadın": "resimler/kadin.jpg",
     "Unisex": "resimler/unisex.jpg" 
 }
-# KRİTİK FİX: Lorinna Logo uzantısı .png olarak güncellendi.
-LORINNA_LOGO_PATH = "resimler/lorinna_logo.png" 
-APP_VERSION = "v10.18" 
+# Logoyu doğrudan aramak yerine, dosya sistemini kullanarak bulmaya çalışacağız.
+LOGOS_FOLDER = "resimler" 
+APP_VERSION = "v10.19" 
 
 if 'last_search_query' not in st.session_state:
     st.session_state.last_search_query = ""
@@ -146,17 +147,34 @@ def find_similar(search_term):
         except Exception:
             return None, pd.DataFrame()
 
+# --- Logo Bulma Fonksiyonu ---
+def find_lorinna_logo():
+    """resimler klasöründeki lorinna logosunu uzantıdan bağımsız bulur."""
+    if not os.path.isdir(LOGOS_FOLDER):
+        return None
+    
+    for filename in os.listdir(LOGOS_FOLDER):
+        # Dosya adını küçük harfe çevirip "lorinna" ve "logo" içeriyor mu diye kontrol et
+        if 'lorinna' in filename.lower() and 'logo' in filename.lower():
+            return os.path.join(LOGOS_FOLDER, filename)
+    return None
 
 # --- 5. KULLANICI ARAYÜZÜ ---
 
 # BAŞLIK DÜZENLEMESİ: Logo ve Sürüm bilgisi eklendi
 col_logo_title, col_version_text = st.columns([0.2, 1])
 
+logo_path = find_lorinna_logo() # Logonun yolunu bulmaya çalış
+
 with col_logo_title:
     try:
-        st.image(LORINNA_LOGO_PATH, width=50) 
-    except FileNotFoundError:
-        st.markdown("👃") # Logo bulunamazsa emoji
+        if logo_path:
+            st.image(logo_path, width=50) 
+        else:
+            st.markdown("👃") # Logo bulunamazsa emoji
+    except Exception:
+        st.markdown("👃")
+
 
 with col_version_text:
     st.markdown(f"<h1 style='display: inline;'>LRN Koku Rehberi </h1> <span style='font-size: 0.5em; color: gray;'>({APP_VERSION})</span>", unsafe_allow_html=True)
