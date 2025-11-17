@@ -1,4 +1,4 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.4 - Final)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.5 - Final Arama Fix'i)
 
 import streamlit as st
 import pandas as pd
@@ -31,7 +31,7 @@ def safe_eval(text):
 
 # --- 1. SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="LRN Koku Rehberi v10.4 (Final)",
+    page_title="LRN Koku Rehberi v10.5 (Final)",
     page_icon="👃",
     layout="wide"
 )
@@ -65,25 +65,20 @@ stok_df, cosine_sim_matrix, vectorizer = load_data()
 def display_stok_card(parfum_serisi):
     """Stoktaki bir parfümü kart olarak gösterir (Niche Logiği GÜÇLENDİRİLDİ)."""
     
-    # 1. İkon: Cinsiyet ikonunu al
     gender_icon = GENDER_ICONS.get(parfum_serisi['cinsiyet'], "🚻")
 
-    # 2. Niche Logic: LRN kodu 200 veya altıysa Niche ikonu al
+    # Niche Logic: LRN kodu 200 veya altıysa Niche ikonu al
     try:
         lrn_code = int(parfum_serisi['kod'])
         niche_icon = GENDER_ICONS.get("Niche") if lrn_code <= 200 else ""
     except ValueError:
         niche_icon = "" 
 
-    
-    # İkonlar ve kod yan yana (Niche ikonu öncelikli)
-    # Niche ikonu varsa, cinsiyet ikonundan önce gösterilir
     icon_display = f"{niche_icon} {gender_icon}" if niche_icon else gender_icon
     
     st.markdown(f"**{icon_display} {parfum_serisi['kod']}** ({parfum_serisi['isim']})")
     st.markdown(f"**Kategori:** {parfum_serisi['kategori']}")
     
-    # Notaları göster
     try:
         not_listesi = eval(parfum_serisi['notalar'])
         st.caption(f"Ana Notalar: {', '.join(not_listesi[:4])}...")
@@ -100,7 +95,6 @@ def find_similar(search_term):
         st.session_state.search_history = st.session_state.search_history[:5]
     
     recommendations = []
-    search_term_lower = search_term.lower()
     
     # 1. LRN Koduna veya Orijinal Adına Göre Ana Ürünü Bulma
     match = stok_df[
@@ -133,22 +127,18 @@ def find_similar(search_term):
         st.warning(f"**'{search_term}'** adında bir ürün veya kod bulunamadı. Nota/Kategori araması yapılıyor...")
         
         try:
-            # Arama terimine 'çiçeksi' terimini dahil etme fix'i
-            search_vector = vectorizer.transform([search_term + " çiçeksi floral"]) 
+            # Arama terimi vektörü (çiçeksi/floral terimlerini dahili olarak aramayı kolaylaştırır)
+            search_vector = vectorizer.transform([search_term]) 
             nota_sim_scores = cosine_similarity(search_vector, cosine_sim_matrix.T) 
             
             stock_scores = sorted(list(enumerate(nota_sim_scores[0])), key=lambda x: x[1], reverse=True)
             
-            count = 0
-            for i, score in stock_scores:
+            # --- KRİTİK FİX: SKOR KONTROLÜ KALDIRILDI, İLK 3 HER ZAMAN GÖSTERİLİR ---
+            top_3_scores = stock_scores[:3]
+            
+            for i, score in top_3_scores:
                 recommended_parfum = stok_df.iloc[i]
-                
-                if score > 0.0:
-                    recommendations.append(recommended_parfum)
-                    count += 1
-
-                if count >= 3:
-                    break
+                recommendations.append(recommended_parfum)
             
             return None, recommendations
 
@@ -158,7 +148,7 @@ def find_similar(search_term):
 
 # --- 5. KULLANICI ARAYÜZÜ ---
 
-st.title("👃 LRN Koku Rehberi v10.4 (Final)")
+st.title("👃 LRN Koku Rehberi v10.5 (Final)")
 st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (En yakın 3 kokuyu önerir.)")
 
 st.header("🌟 Stok Arama Motoru")
