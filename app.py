@@ -1,4 +1,4 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.15 - Final Fix)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.18 - Final Uzantı Fix'i)
 
 import streamlit as st
 import pandas as pd
@@ -15,9 +15,10 @@ ICON_MAPPING = {
     "Kadın": "resimler/kadin.jpg",
     "Unisex": "resimler/unisex.jpg" 
 }
+# KRİTİK FİX: Lorinna Logo uzantısı .png olarak güncellendi.
+LORINNA_LOGO_PATH = "resimler/lorinna_logo.png" 
+APP_VERSION = "v10.18" 
 
-if 'search_history' not in st.session_state:
-    st.session_state.search_history = []
 if 'last_search_query' not in st.session_state:
     st.session_state.last_search_query = ""
 
@@ -32,7 +33,7 @@ def safe_eval(text):
 
 # --- 1. SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="LRN Koku Rehberi v10.15 (Final)",
+    page_title="LRN Koku Rehberi",
     page_icon="👃",
     layout="wide"
 )
@@ -90,10 +91,9 @@ def display_stok_card(parfum_serisi):
         st.markdown(f"**{parfum_serisi['kod']}** ({parfum_serisi['isim']})")
         st.markdown(f"**Kategori:** {parfum_serisi['kategori']}")
     
-    # KRİTİK FİX: [:4] kısıtlaması kaldırıldı, tüm notalar gösterilir.
     try:
         not_listesi = eval(parfum_serisi['notalar'])
-        st.caption(f"Ana Notalar: {', '.join(not_listesi)}") # Tüm notalar gösterilir
+        st.caption(f"Ana Notalar: {', '.join(not_listesi)}")
     except:
          st.caption("Ana Notalar: Bilgi yok.")
     
@@ -101,10 +101,6 @@ def display_stok_card(parfum_serisi):
 # --- 4. BENZERLİK BULMA MOTORU (SADECE STOK BAZLI) ---
 
 def find_similar(search_term):
-    
-    if search_term and search_term.lower() not in [h.lower() for h in st.session_state.search_history]:
-        st.session_state.search_history.insert(0, search_term)
-        st.session_state.search_history = st.session_state.search_history[:5]
     
     recommendations_list = []
     search_term_lower = search_term.lower()
@@ -116,14 +112,13 @@ def find_similar(search_term):
     ]
     
     if not match.empty:
-        # Kod/İsim bulunduysa, ML model ile benzerlerini öner
+        # Kod/İsim bulunduysa, ML model ile benzerlerini öner (TOP 3)
         found_perfume = match.iloc[0]
         perfume_index = found_perfume.name
         
         sim_scores = sorted(list(enumerate(cosine_sim_matrix[perfume_index])), key=lambda x: x[1], reverse=True)
         sim_scores_to_check = sim_scores[1:] 
 
-        # Sadece ilk 3 sonucu gösterir
         count = 0
         for i, score in sim_scores_to_check:
             if score > 0.0:
@@ -136,21 +131,17 @@ def find_similar(search_term):
         return found_perfume, pd.DataFrame(recommendations_list)
 
     else:
-        # 2. Nota/Hissiyat veya Kategori Araması (Garanti Metin Filtresi)
+        # 2. Nota/Hissiyat veya Kategori Araması (Eşleşen TÜMÜNÜ gösterir)
         st.warning(f"**'{search_term}'** adında bir ürün veya kod bulunamadı. Nota/Kategori araması yapılıyor...")
         
         try:
             # Metin araması yapılır (Garanti sonuç)
-            results = stok_df[
+            results_df = stok_df[
                 stok_df['notalar_str'].str.contains(search_term_lower, case=False, na=False) |
                 stok_df['kategori'].str.contains(search_term_lower, case=False, na=False)
             ]
             
-            # Sınırsız sonuç gösterimi
-            for index, row in results.iterrows():
-                recommendations_list.append(row)
-            
-            return None, pd.DataFrame(recommendations_list)
+            return None, results_df
 
         except Exception:
             return None, pd.DataFrame()
@@ -158,38 +149,32 @@ def find_similar(search_term):
 
 # --- 5. KULLANICI ARAYÜZÜ ---
 
-st.title("👃 LRN Koku Rehberi v10.15 (Final)")
-st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (Eşleşen tüm kokuları önerir.)")
+# BAŞLIK DÜZENLEMESİ: Logo ve Sürüm bilgisi eklendi
+col_logo_title, col_version_text = st.columns([0.2, 1])
 
-st.header("🌟 Stok Arama Motoru")
-st.markdown("LRN Kodunu (`255`), Orijinal Adı (`Creed Aventus`) veya Notayı (`vanilya`, `çiçeksi`) girin.")
+with col_logo_title:
+    try:
+        st.image(LORINNA_LOGO_PATH, width=50) 
+    except FileNotFoundError:
+        st.markdown("👃") # Logo bulunamazsa emoji
 
-# --- Arama Formu ---
-col1, col2 = st.columns([3, 1])
+with col_version_text:
+    st.markdown(f"<h1 style='display: inline;'>LRN Koku Rehberi </h1> <span style='font-size: 0.5em; color: gray;'>({APP_VERSION})</span>", unsafe_allow_html=True)
 
-with col1:
-    search_query = st.text_input("Arama Kutusu", placeholder="örn: 255 veya çiçeksi", key="main_search_query")
+
+st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (Nota/Kategori aramalarında tüm eşleşenleri gösterir.)")
+
+# ARAMA ÇUBUĞU SADELEŞTİRİLDİ
+col_search, col_space = st.columns([1, 3]) 
+
+with col_search:
+    search_query = st.text_input("Arama Kutusu", placeholder="örn: 255 veya çiçeksi", key="main_search_query", label_visibility="collapsed")
     
-with col2:
-    if st.button("Geçmişi Temizle", help="Arama geçmişini temizler", use_container_width=True):
-        st.session_state.search_history = []
-        st.session_state.last_search_query = ""
-        st.rerun()
+button_pressed = st.button("Koku Bul", type="primary", use_container_width=True)
 
-search_triggered = False
-if st.session_state.search_history: 
-    with st.expander("Son Aramalarınız"):
-        history_cols = st.columns(len(st.session_state.search_history))
-        for i, query in enumerate(st.session_state.search_history):
-            if history_cols[i].button(query, key=f"hist_{query}"):
-                st.session_state.main_search_query = query
-                search_triggered = True
-
-# --- Arama Tetikleme (Enter/Buton/Geçmiş Hepsini Kapsar) ---
 final_query = st.session_state.main_search_query
-button_pressed = st.button("Koku Bul", type="primary")
 
-if final_query and (button_pressed or search_triggered or final_query != st.session_state.get('last_search_query', '')):
+if final_query and (button_pressed or final_query != st.session_state.get('last_search_query', '')):
     
     if len(final_query) < 2 and not final_query.isdigit():
         st.warning("Lütfen en az 2 harf veya geçerli bir kod girin.")
@@ -208,9 +193,13 @@ if final_query and (button_pressed or search_triggered or final_query != st.sess
 
         # 2. Önerileri Listele (Yan Yana Görüntü)
         if not recommended_parfumes.empty:
-            st.subheader(f"Size En Çok Benzeyen ({len(recommended_parfumes)} Adet):")
             
-            cols = st.columns(3) # 3 sütun oluştur
+            if main_product is not None: 
+                 st.subheader(f"Size En Çok Benzeyen ({len(recommended_parfumes)} Adet):")
+            else: 
+                st.subheader(f"Eşleşen Ürünler ({len(recommended_parfumes)} Adet):")
+            
+            cols = st.columns(3) 
             
             for i, (index, parfum_row) in enumerate(recommended_parfumes.iterrows()):
                 with cols[i % 3]:
@@ -218,6 +207,6 @@ if final_query and (button_pressed or search_triggered or final_query != st.sess
                         display_stok_card(parfum_row)
         else:
             if main_product is None:
-                st.error(f"'{final_query}' aramasıyla eşleşen bir ürün bulunamadı.")
+                st.error(f"'{final_query}' aramasına eşleşen stok ürünü bulunamadı.")
             else:
                  st.info(f"'{main_product['isim']}' ürününe benzeyen başka ürün bulunamadı.")
