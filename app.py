@@ -1,4 +1,4 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.13 - Final Veri Yapısı Fix'i)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.15 - Final Fix)
 
 import streamlit as st
 import pandas as pd
@@ -32,7 +32,7 @@ def safe_eval(text):
 
 # --- 1. SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="LRN Koku Rehberi v10.13 (Final)",
+    page_title="LRN Koku Rehberi v10.15 (Final)",
     page_icon="👃",
     layout="wide"
 )
@@ -90,9 +90,10 @@ def display_stok_card(parfum_serisi):
         st.markdown(f"**{parfum_serisi['kod']}** ({parfum_serisi['isim']})")
         st.markdown(f"**Kategori:** {parfum_serisi['kategori']}")
     
+    # KRİTİK FİX: [:4] kısıtlaması kaldırıldı, tüm notalar gösterilir.
     try:
         not_listesi = eval(parfum_serisi['notalar'])
-        st.caption(f"Ana Notalar: {', '.join(not_listesi[:4])}...")
+        st.caption(f"Ana Notalar: {', '.join(not_listesi)}") # Tüm notalar gösterilir
     except:
          st.caption("Ana Notalar: Bilgi yok.")
     
@@ -122,12 +123,16 @@ def find_similar(search_term):
         sim_scores = sorted(list(enumerate(cosine_sim_matrix[perfume_index])), key=lambda x: x[1], reverse=True)
         sim_scores_to_check = sim_scores[1:] 
 
-        # Sınırsız sonuç gösterimi
+        # Sadece ilk 3 sonucu gösterir
+        count = 0
         for i, score in sim_scores_to_check:
             if score > 0.0:
-                recommendations_list.append(stok_df.iloc[i])
+                recommended_parfum = stok_df.iloc[i]
+                recommendations_list.append(recommended_parfum)
+                count += 1
+            if count >= 3: 
+                break
         
-        # FİX: Listeyi DataFrame'e çevir
         return found_perfume, pd.DataFrame(recommendations_list)
 
     else:
@@ -135,22 +140,25 @@ def find_similar(search_term):
         st.warning(f"**'{search_term}'** adında bir ürün veya kod bulunamadı. Nota/Kategori araması yapılıyor...")
         
         try:
-            results_df = stok_df[
+            # Metin araması yapılır (Garanti sonuç)
+            results = stok_df[
                 stok_df['notalar_str'].str.contains(search_term_lower, case=False, na=False) |
                 stok_df['kategori'].str.contains(search_term_lower, case=False, na=False)
             ]
             
-            # Sınırsız sonuç gösterimi (results_df zaten DataFrame)
-            return None, results_df
+            # Sınırsız sonuç gösterimi
+            for index, row in results.iterrows():
+                recommendations_list.append(row)
+            
+            return None, pd.DataFrame(recommendations_list)
 
         except Exception:
-            # Hata durumunda boş DataFrame döndürülür
             return None, pd.DataFrame()
 
 
 # --- 5. KULLANICI ARAYÜZÜ ---
 
-st.title("👃 LRN Koku Rehberi v10.13 (Final)")
+st.title("👃 LRN Koku Rehberi v10.15 (Final)")
 st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (Eşleşen tüm kokuları önerir.)")
 
 st.header("🌟 Stok Arama Motoru")
@@ -202,7 +210,7 @@ if final_query and (button_pressed or search_triggered or final_query != st.sess
         if not recommended_parfumes.empty:
             st.subheader(f"Size En Çok Benzeyen ({len(recommended_parfumes)} Adet):")
             
-            cols = st.columns(3)
+            cols = st.columns(3) # 3 sütun oluştur
             
             for i, (index, parfum_row) in enumerate(recommended_parfumes.iterrows()):
                 with cols[i % 3]:
