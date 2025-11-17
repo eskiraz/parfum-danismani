@@ -1,4 +1,4 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.8 - Final Arama Fix'i)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.9 - Final Garanti Arama)
 
 import streamlit as st
 import pandas as pd
@@ -31,7 +31,7 @@ def safe_eval(text):
 
 # --- 1. SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="LRN Koku Rehberi v10.8 (Final)",
+    page_title="LRN Koku Rehberi v10.9 (Final)",
     page_icon="👃",
     layout="wide"
 )
@@ -46,7 +46,7 @@ def load_data():
         # Notaları ve Kategori adlarını birleştir (Arama hassasiyeti için)
         df['notalar_str'] = df['notalar'].apply(safe_eval) + ' ' + df['kategori'].str.lower()
         
-        # Model Kurulumu (Sadece 122 ürüne göre)
+        # MODEL OLUŞTURMA: Sadece kod ve isim eşleşmesi için tutulur, nota aramasında BYPASS edilir.
         vectorizer = CountVectorizer(min_df=1)
         koku_matrix = vectorizer.fit_transform(df['notalar_str'])
         cosine_sim = cosine_similarity(koku_matrix, koku_matrix)
@@ -121,30 +121,32 @@ def find_similar(search_term):
         return found_perfume, recommendations
 
     else:
-        # 2. Nota/Hissiyat veya Kategori Araması (örn: Çiçeksi)
+        # 2. NOTA VEYA KATEGORİ ARAMASI (METİN ARAMASI KULLANILIR - GARANTİ SONUÇ)
         st.warning(f"**'{search_term}'** adında bir ürün veya kod bulunamadı. Nota/Kategori araması yapılıyor...")
         
         try:
-            # KRİTİK FİX: Çiçek/çiçeksi/floral aramasını garanti altına alma
-            if 'cicek' in search_term_lower or 'çiçek' in search_term_lower:
-                search_term_enhanced = "çiçeksi floral"
-            elif 'vanilya' in search_term_lower:
-                search_term_enhanced = "vanilla"
-            else:
-                search_term_enhanced = search_term
-                
-            # Basit ML modeli ile en yakın 3'ü bul
-            search_vector = vectorizer.transform([search_term_enhanced]) 
-            nota_sim_scores = cosine_similarity(search_vector, cosine_sim_matrix.T) 
+            # KRİTİK FİX: ML'Yİ BYPASS EDİP GARANTİLİ METİN ARAMASINA GEÇ
+            results = stok_df[
+                stok_df['notalar_str'].str.contains(search_term_lower, case=False, na=False) |
+                stok_df['kategori'].str.contains(search_term_lower, case=False, na=False)
+            ]
             
-            stock_scores = sorted(list(enumerate(nota_sim_scores[0])), key=lambda x: x[1], reverse=True)
+            # Eğer 'çiçek' arandıysa, 'çiçeksi' ve 'floral' içerenleri de dahil et
+            if 'çiçek' in search_term_lower or 'cicek' in search_term_lower:
+                results_enhanced = stok_df[
+                    stok_df['notalar_str'].str.contains('çiçeksi|floral', case=False, na=False) |
+                    stok_df['kategori'].str.contains('çiçeksi|floral', case=False, na=False)
+                ]
+                results = pd.concat([results, results_enhanced]).drop_duplicates()
             
-            # İlk 3 ürünü her zaman göster
-            top_3_scores = stock_scores[:3]
+            # En iyi 3 sonucu döndür
+            top_3_results = results.head(3)
             
-            for i, score in top_3_scores:
-                recommended_parfum = stok_df.iloc[i]
-                recommendations.append(recommended_parfum)
+            if top_3_results.empty:
+                 return None, []
+
+            for index, row in top_3_results.iterrows():
+                recommendations.append(row)
             
             return None, recommendations
 
@@ -154,7 +156,7 @@ def find_similar(search_term):
 
 # --- 5. KULLANICI ARAYÜZÜ ---
 
-st.title("👃 LRN Koku Rehberi v10.8 (Final)")
+st.title("👃 LRN Koku Rehberi v10.9 (Final)")
 st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (En yakın 3 kokuyu önerir.)")
 
 st.header("🌟 Stok Arama Motoru")
@@ -164,7 +166,6 @@ st.markdown("LRN Kodunu (`255`), Orijinal Adı (`Creed Aventus`) veya Notayı (`
 col1, col2 = st.columns([3, 1])
 
 with col1:
-    # Enter tuşu, bu text_input'un değerini değiştirdiğinde otomatik olarak alttaki if bloğunu tetikler.
     search_query = st.text_input("Arama Kutusu", placeholder="örn: 255 veya çiçeksi", key="main_search_query")
     
 with col2:
@@ -186,7 +187,6 @@ if st.session_state.search_history:
 final_query = st.session_state.main_search_query
 button_pressed = st.button("Koku Bul", type="primary")
 
-# Enter tuşu, buton veya geçmiş araması tetiklendiğinde çalışır.
 if final_query and (button_pressed or search_triggered or final_query != st.session_state.get('last_search_query', '')):
     
     if len(final_query) < 2 and not final_query.isdigit():
