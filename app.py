@@ -1,4 +1,4 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.11 - Final Fix)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.12 - Final Yazım Fix'i)
 
 import streamlit as st
 import pandas as pd
@@ -8,10 +8,9 @@ import numpy as np
 import re
 
 # --- 0. SABİTLER ve OTURUM DURUMU ---
-# KRİTİK FİX: Görsel uzantıları .jpg olarak güncellendi.
 IMAGE_SIZE = 25 
 ICON_MAPPING = {
-    "Niche": "resimler/niche.jpg", # Kod <= 200 ise
+    "Niche": "resimler/niche.jpg", 
     "Erkek": "resimler/erkek.jpg",
     "Kadın": "resimler/kadin.jpg",
     "Unisex": "resimler/unisex.jpg" 
@@ -33,7 +32,7 @@ def safe_eval(text):
 
 # --- 1. SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="LRN Koku Rehberi v10.11 (Final)",
+    page_title="LRN Koku Rehberi v10.12 (Final)",
     page_icon="👃",
     layout="wide"
 )
@@ -71,7 +70,7 @@ def get_icon_path(parfum_serisi):
         if lrn_code <= 200:
             return ICON_MAPPING["Niche"] # Niche önceliklidir
     except ValueError:
-        pass # Kod sayı değilse Niche değil
+        pass 
     
     gender = parfum_serisi['cinsiyet']
     return ICON_MAPPING.get(gender, ICON_MAPPING["Unisex"])
@@ -82,12 +81,10 @@ def display_stok_card(parfum_serisi):
     
     icon_path = get_icon_path(parfum_serisi)
     
-    # 2 sütun oluştur: 1. sütun resim, 2. sütun metin
     col_icon, col_text = st.columns([1, 6])
     
     with col_icon:
         try:
-            # Resim gösterimi
             st.image(icon_path, width=IMAGE_SIZE)
         except Exception:
              st.markdown("👃") # Resim bulunamazsa emoji göster
@@ -96,7 +93,6 @@ def display_stok_card(parfum_serisi):
         st.markdown(f"**{parfum_serisi['kod']}** ({parfum_serisi['isim']})")
         st.markdown(f"**Kategori:** {parfum_serisi['kategori']}")
     
-    # Ek notaları ana metin altına koy
     try:
         not_listesi = eval(parfum_serisi['notalar'])
         st.caption(f"Ana Notalar: {', '.join(not_listesi[:4])}...")
@@ -152,15 +148,16 @@ def find_similar(search_term):
             for index, row in results.iterrows():
                 recommendations.append(row)
             
-            return None, recommendations
+            # Sonuçları DataFrame olarak döndür
+            return None, pd.DataFrame(recommendations)
 
         except Exception:
-            return None, []
+            return None, pd.DataFrame()
 
 
 # --- 5. KULLANICI ARAYÜZÜ ---
 
-st.title("👃 LRN Koku Rehberi v10.11 (Final)")
+st.title("👃 LRN Koku Rehberi v10.12 (Final)")
 st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (Eşleşen tüm kokuları önerir.)")
 
 st.header("🌟 Stok Arama Motoru")
@@ -179,7 +176,8 @@ with col2:
         st.rerun()
 
 search_triggered = False
-if st.sessionion_state.search_history:
+# YAZIM HATASI DÜZELTİLDİ: st.sessionion_state -> st.session_state
+if st.session_state.search_history: 
     with st.expander("Son Aramalarınız"):
         history_cols = st.columns(len(st.session_state.search_history))
         for i, query in enumerate(st.session_state.search_history):
