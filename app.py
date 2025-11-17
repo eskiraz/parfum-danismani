@@ -1,4 +1,4 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.12 - Final Yazım Fix'i)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.13 - Final Veri Yapısı Fix'i)
 
 import streamlit as st
 import pandas as pd
@@ -32,7 +32,7 @@ def safe_eval(text):
 
 # --- 1. SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="LRN Koku Rehberi v10.12 (Final)",
+    page_title="LRN Koku Rehberi v10.13 (Final)",
     page_icon="👃",
     layout="wide"
 )
@@ -44,10 +44,8 @@ def load_data():
         df = pd.read_csv("stok_listesi_clean.csv")
         df = df.rename(columns={'orijinal_ad': 'isim'})
         
-        # Notaları ve Kategori adlarını birleştir (Arama hassasiyeti için)
         df['notalar_str'] = df['notalar'].apply(safe_eval) + ' ' + df['kategori'].str.lower()
         
-        # Model Kurulumu (Sadece 122 ürüne göre)
         vectorizer = CountVectorizer(min_df=1)
         koku_matrix = vectorizer.fit_transform(df['notalar_str'])
         cosine_sim = cosine_similarity(koku_matrix, koku_matrix)
@@ -64,11 +62,11 @@ stok_df, cosine_sim_matrix, vectorizer = load_data()
 # --- 3. YARDIMCI FONKSİYONLAR (KART GÖSTERİMİ) ---
 
 def get_icon_path(parfum_serisi):
-    """Parfümün Niche/Cinsiyet durumuna göre resim dosya yolunu döndürür."""
+    
     try:
         lrn_code = int(parfum_serisi['kod'])
         if lrn_code <= 200:
-            return ICON_MAPPING["Niche"] # Niche önceliklidir
+            return ICON_MAPPING["Niche"]
     except ValueError:
         pass 
     
@@ -77,7 +75,6 @@ def get_icon_path(parfum_serisi):
 
 
 def display_stok_card(parfum_serisi):
-    """Stoktaki bir parfümü kart olarak gösterir (Görsel Fix)."""
     
     icon_path = get_icon_path(parfum_serisi)
     
@@ -87,7 +84,7 @@ def display_stok_card(parfum_serisi):
         try:
             st.image(icon_path, width=IMAGE_SIZE)
         except Exception:
-             st.markdown("👃") # Resim bulunamazsa emoji göster
+             st.markdown("👃") 
 
     with col_text:
         st.markdown(f"**{parfum_serisi['kod']}** ({parfum_serisi['isim']})")
@@ -108,7 +105,7 @@ def find_similar(search_term):
         st.session_state.search_history.insert(0, search_term)
         st.session_state.search_history = st.session_state.search_history[:5]
     
-    recommendations = []
+    recommendations_list = []
     search_term_lower = search_term.lower()
     
     # 1. LRN Koduna veya Orijinal Adına Göre Ana Ürünü Bulma (Kesin Eşleşme Aranır)
@@ -127,37 +124,33 @@ def find_similar(search_term):
 
         # Sınırsız sonuç gösterimi
         for i, score in sim_scores_to_check:
-            if score > 0.0: # Skor sıfırdan büyükse göster
-                recommended_parfum = stok_df.iloc[i]
-                recommendations.append(recommended_parfum)
+            if score > 0.0:
+                recommendations_list.append(stok_df.iloc[i])
         
-        return found_perfume, recommendations
+        # FİX: Listeyi DataFrame'e çevir
+        return found_perfume, pd.DataFrame(recommendations_list)
 
     else:
         # 2. Nota/Hissiyat veya Kategori Araması (Garanti Metin Filtresi)
         st.warning(f"**'{search_term}'** adında bir ürün veya kod bulunamadı. Nota/Kategori araması yapılıyor...")
         
         try:
-            # Metin araması yapılır (Garanti sonuç)
-            results = stok_df[
+            results_df = stok_df[
                 stok_df['notalar_str'].str.contains(search_term_lower, case=False, na=False) |
                 stok_df['kategori'].str.contains(search_term_lower, case=False, na=False)
             ]
             
-            # Sınırsız sonuç gösterimi
-            for index, row in results.iterrows():
-                recommendations.append(row)
-            
-            # Sonuçları DataFrame olarak döndür
-            return None, pd.DataFrame(recommendations)
+            # Sınırsız sonuç gösterimi (results_df zaten DataFrame)
+            return None, results_df
 
         except Exception:
+            # Hata durumunda boş DataFrame döndürülür
             return None, pd.DataFrame()
 
 
 # --- 5. KULLANICI ARAYÜZÜ ---
 
-st.title("👃 LRN Koku Rehberi v10.12 (Final)")
+st.title("👃 LRN Koku Rehberi v10.13 (Final)")
 st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (Eşleşen tüm kokuları önerir.)")
 
 st.header("🌟 Stok Arama Motoru")
@@ -176,7 +169,6 @@ with col2:
         st.rerun()
 
 search_triggered = False
-# YAZIM HATASI DÜZELTİLDİ: st.sessionion_state -> st.session_state
 if st.session_state.search_history: 
     with st.expander("Son Aramalarınız"):
         history_cols = st.columns(len(st.session_state.search_history))
@@ -210,9 +202,8 @@ if final_query and (button_pressed or search_triggered or final_query != st.sess
         if not recommended_parfumes.empty:
             st.subheader(f"Size En Çok Benzeyen ({len(recommended_parfumes)} Adet):")
             
-            cols = st.columns(3) # 3 sütun oluştur
+            cols = st.columns(3)
             
-            # Pandas DataFrame'i kullanarak verileri döngüye al
             for i, (index, parfum_row) in enumerate(recommended_parfumes.iterrows()):
                 with cols[i % 3]:
                     with st.container(border=True):
