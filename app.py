@@ -1,4 +1,4 @@
-# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v10.5 - Final Arama Fix'i)
+# BU KODUN TAMAMINI KOPYALAYIN VE app.py DOSYASINA YAPIŞTIRIN (v11.0 - 70k'sız Final)
 
 import streamlit as st
 import pandas as pd
@@ -31,7 +31,7 @@ def safe_eval(text):
 
 # --- 1. SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="LRN Koku Rehberi v10.5 (Final)",
+    page_title="LRN Koku Rehberi v11.0 (Final Stok Bazlı)",
     page_icon="👃",
     layout="wide"
 )
@@ -39,16 +39,20 @@ st.set_page_config(
 # --- 2. VERİ YÜKLEME VE MODEL OLUŞTURMA (SADECE 122 ÜRÜN) ---
 @st.cache_resource
 def load_data():
+    """Model, sadece stoktaki 122 ürüne göre oluşturulur."""
     try:
+        # 1. Stok Veritabanını Yükle
         df = pd.read_csv("stok_listesi_clean.csv")
         df = df.rename(columns={'orijinal_ad': 'isim'})
         
         # Notaları ve Kategori adlarını birleştir (Arama hassasiyeti için)
         df['notalar_str'] = df['notalar'].apply(safe_eval) + ' ' + df['kategori'].str.lower()
         
-        # Model Kurulumu (Sadece 122 ürüne göre)
+        # 2. Model Kurulumu (Sadece 122 ürüne göre)
         vectorizer = CountVectorizer(min_df=1)
         koku_matrix = vectorizer.fit_transform(df['notalar_str'])
+        
+        # 3. Benzerlik Matrisi Oluştur
         cosine_sim = cosine_similarity(koku_matrix, koku_matrix)
         
         return df, cosine_sim, vectorizer
@@ -63,11 +67,9 @@ stok_df, cosine_sim_matrix, vectorizer = load_data()
 # --- 3. YARDIMCI FONKSİYONLAR (KART GÖSTERİMİ) ---
 
 def display_stok_card(parfum_serisi):
-    """Stoktaki bir parfümü kart olarak gösterir (Niche Logiği GÜÇLENDİRİLDİ)."""
     
     gender_icon = GENDER_ICONS.get(parfum_serisi['cinsiyet'], "🚻")
 
-    # Niche Logic: LRN kodu 200 veya altıysa Niche ikonu al
     try:
         lrn_code = int(parfum_serisi['kod'])
         niche_icon = GENDER_ICONS.get("Niche") if lrn_code <= 200 else ""
@@ -128,12 +130,13 @@ def find_similar(search_term):
         
         try:
             # Arama terimi vektörü (çiçeksi/floral terimlerini dahili olarak aramayı kolaylaştırır)
+            # Bu kod, 122 ürün içinde en yakın 3'ü bulur.
             search_vector = vectorizer.transform([search_term]) 
             nota_sim_scores = cosine_similarity(search_vector, cosine_sim_matrix.T) 
             
             stock_scores = sorted(list(enumerate(nota_sim_scores[0])), key=lambda x: x[1], reverse=True)
             
-            # --- KRİTİK FİX: SKOR KONTROLÜ KALDIRILDI, İLK 3 HER ZAMAN GÖSTERİLİR ---
+            # İlk 3 ürünü her zaman göster
             top_3_scores = stock_scores[:3]
             
             for i, score in top_3_scores:
@@ -148,7 +151,7 @@ def find_similar(search_term):
 
 # --- 5. KULLANICI ARAYÜZÜ ---
 
-st.title("👃 LRN Koku Rehberi v10.5 (Final)")
+st.title("👃 LRN Koku Rehberi v11.0 (Final Stok Bazlı)")
 st.markdown(f"**Toplam {len(stok_df)}** stoklu ürün. (En yakın 3 kokuyu önerir.)")
 
 st.header("🌟 Stok Arama Motoru")
@@ -184,7 +187,6 @@ if final_query and (button_pressed or search_triggered or final_query != st.sess
     if len(final_query) < 2 and not final_query.isdigit():
         st.warning("Lütfen en az 2 harf veya geçerli bir kod girin.")
     else:
-        # ARAMA MOTORUNU ÇALIŞTIR
         main_product, recommended_parfumes = find_similar(final_query)
         st.session_state.last_search_query = final_query 
 
