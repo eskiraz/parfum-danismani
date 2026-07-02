@@ -6,7 +6,7 @@ import re
 
 st.set_page_config(page_title="Lorinna AI Parfüm Motoru", page_icon="⚙️", layout="wide")
 
-# --- GELİŞMİŞ CSS TASARIMI (YAN YANA GÖRÜNÜM) ---
+# --- GELİŞMİŞ CSS TASARIMI (YAN YANA GÖRÜNÜM İÇİ) ---
 st.markdown("""
 <style>
     .engine-header { text-align: center; color: #f39c12; font-size: 2.5em; font-weight: bold; margin-bottom: 5px; }
@@ -22,8 +22,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ÖNBELLEĞİ ZORLA TEMİZLEYEN YENİ KOD (@st.cache_data YERİNE)
-# Bu sayede GitHub'a yüklediğiniz yeni Excel dosyasını kesinlikle okuyacak!
 def load_data():
     df = pd.read_excel("Lorinna_Master_Veri.xlsx")
     df['Orijinal_Ad_Lorinna'] = df['Orijinal_Ad_Lorinna'].fillna("").astype(str)
@@ -76,7 +74,7 @@ if search_query:
         target_code = eslesen_urun['Lorinna_Kodu']
         target_notes = clean_notes(eslesen_urun['Notalar_KULLANMAK'])
         
-        # EKRANI İKİYE BÖL (Sol 1 birim, Sağ 1.5 birim genişlikte)
+        # EKRANI İKİYE BÖL
         col_main, col_alts = st.columns([1, 1.5])
         
         with col_main:
@@ -95,7 +93,8 @@ if search_query:
             if target_notes:
                 st.markdown("### 🔬 Koku Profiline En Yakın Lorinna Alternatifleri:")
                 
-                df_master['Ortak_Nota_Sayisi'] = 0
+                # DÜZELTİLEN KISIM: 0.0 YAZARAK FLOAT (KÜSÜRATLI) YAPTIK!
+                df_master['Ortak_Nota_Sayisi'] = 0.0 
                 target_set = set(target_notes)
                 
                 for idx, row in df_master.iterrows():
@@ -113,7 +112,6 @@ if search_query:
                 if not top_3.empty:
                     for index, row in top_3.iterrows():
                         benzer_notalar = clean_notes(row['Notalar_KULLANMAK'])
-                        # Sadece ortak olanları turuncu yapalım
                         b_tags = ""
                         for n in benzer_notalar:
                             if n in target_set:
@@ -130,3 +128,5 @@ if search_query:
                         """, unsafe_allow_html=True)
                 else:
                     st.info("Bu koku profiline yeterince benzeyen başka bir alternatif bulunamadı.")
+            else:
+                st.warning("Aranan parfümün nota bilgisi olmadığı için alternatif hesaplanamıyor.")
