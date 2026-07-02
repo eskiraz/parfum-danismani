@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from thefuzz import process
+from thefuzz import process, fuzz
 import numpy as np
 
 # --- SAYFA AYARLARI ---
@@ -62,8 +62,6 @@ if not df_master.empty:
         search_query_lower = search_query.lower().strip()
         
         # --- 1. ADIM: KULLANICI KOD MU YAZDI İSİM Mİ? ---
-        # Eğer kullanıcı "lrn" yazdıysa VEYA sadece rakamlardan oluşan bir şey yazdıysa (örn: 001, 283) 
-        # Kesin (Exact) Arama yapmalıyız, Fuzzy search (esnek arama) YAPMAMALIYIZ!
         is_code_search = "lrn" in search_query_lower or search_query_lower.replace(".", "").isdigit()
         
         eslesen_urun = None
@@ -71,17 +69,15 @@ if not df_master.empty:
 
         if is_code_search:
             # Sadece Kod sütununda tam eşleşme arıyoruz
-            # Kodun içinde örneğin "283" veya "lrn.09.283" geçiyor mu diye bakarız.
             mask = df_master['Lorinna_Kodu'].str.lower().str.contains(search_query_lower, na=False)
             matched_rows = df_master[mask]
             
             if not matched_rows.empty:
-                # Tam kod bulundu!
                 eslesen_urun = matched_rows.iloc[0]
                 exact_match_found = True
             
         else:
-            # Kullanıcı isim girdi (Örn: Tom Ford). Burada esnek (Fuzzy) arama çalışır.
+            # Kullanıcı isim girdi, esnek arama çalışır.
             orijinal_isimler_listesi = df_master['Orijinal_Ad_Lorinna'].tolist()
             best_match_name, match_score = process.extractOne(search_query_lower, orijinal_isimler_listesi)
             
@@ -91,14 +87,12 @@ if not df_master.empty:
 
 
         # --- 2. ADIM: SONUÇLARI GÖSTER ---
-        
         if exact_match_found:
-            # Ya kodu tam bulduk ya da ismi %80 üzeri tam eşleştirdik
             st.success("✅ Aradığınız parfüm doğrudan Lorinna stoklarında mevcut!")
             
             st.markdown(f"""
             <div class="result-card">
-                <h4>Aradığınız Koku: {eslesen_urun['Orijinal_Ad_Lorinna'].title()}</h4>
+                <h4>Orijinal Koku: {eslesen_urun['Orijinal_Ad_Lorinna'].title()}</h4>
                 <h3>Lorinna Karşılığı: <span style="color: #d32f2f;">{eslesen_urun['Lorinna_Kodu']}</span></h3>
             </div>
             """, unsafe_allow_html=True)
@@ -109,17 +103,48 @@ if not df_master.empty:
             else:
                 st.write("**Bu parfümün koku profili:** Detaylı nota bilgisi bulunamadı.")
 
+            # --- YENİ EKLENEN BÖLÜM: BENZER 3 PARFÜMÜ GETİR ---
+            st.markdown("### 🌟 Bu Kokuya Benzer Diğer Lorinna Parfümleri")
+            
+            # Aranan parfümün kendisini seçeneklerden çıkarıyoruz ki aynısını tekrar önermesin
+            df_others = df_master[df_master['Lorinna_Kodu'] != eslesen_urun['Lorinna_Kodu']].copy()
+            
+            # Aranan parfümün notalarını ve tanımını birleştirip tek bir metin yapıyoruz
+            hedef_metin = str(eslesen_urun['Notalar_KULLANMAK']).lower() + " " + str(eslesen_urun.get('Parfum_Tanimi', '')).lower()
+            
+            # Tüm parfümlerle nota benzerliğini hesaplıyoruz (fuzz.token_set_ratio kelime sırası gözetmeksizin benzerlik kurar)
+            df_others['Benzerlik_Skoru'] = df_others.apply(
+                lambda row: fuzz.token_set_ratio(
+                    hedef_metin, 
+                    str(row['Notalar_KULLANMAK']).lower() + " " + str(row.get('Parfum_Tanimi', '')).lower()
+                ), axis=1
+            )
+            
+            # En çok benzeyen (skoru en yüksek) 3 parfümü seçiyoruz
+            top_3 = df_others.sort_values(by='Benzerlik_Skoru', ascending=False).head(3)
+            
+            for index, row in top_3.iterrows():
+                notalar_alt = str(row['Notalar_KULLANMAK']).replace("[", "").replace("]", "").replace("'", "")
+                if notalar_alt.lower() == 'nan': notalar_alt = "Bilgi yok"
+                
+                st.markdown(f"""
+                <div class="alt-card">
+                    <h5>Lorinna Kodu: <span style="color:#d32f2f;">{row['Lorinna_Kodu']}</span> <span style="color:green; font-size:14px;">(%{row['Benzerlik_Skoru']} Benzerlik)</span></h5>
+                    <p><strong>Benzer Koku Grubu:</strong> {row['Orijinal_Ad_Lorinna'].title()}</p>
+                    <p style="font-size:0.9em; color:gray;">Ana Akortlar: {notalar_alt}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
         else:
-            # --- 3. ADIM: STOKTA YOKSA NOTAYA/İSME GÖRE ÖNERİ YAP ---
+            # --- 3. ADIM: STOKTA YOKSA DOĞRUDAN ARAMA METNİNE GÖRE ÖNERİ YAP ---
             if is_code_search:
                 st.error("Aradığınız kodda bir parfüm stoklarımızda bulunamadı.")
             else:
                 st.warning(f"'{search_query}' isimli parfümün doğrudan bir Lorinna karşılığı bulunamadı. Ancak bu koku profiline yakın alternatiflerimizi inceleyin:")
                 
-                # Master veri içinde basit bir puanlama yapıyoruz
                 df_master['Toplam_Puan'] = 0.0
                 for idx, row in df_master.iterrows():
-                    text_to_search = str(row['Orijinal_Ad_Lorinna']).lower() + " " + str(row['Notalar_KULLANMAK']).lower() + " " + str(row['Parfum_Tanimi']).lower()
+                    text_to_search = str(row['Orijinal_Ad_Lorinna']).lower() + " " + str(row['Notalar_KULLANMAK']).lower() + " " + str(row.get('Parfum_Tanimi', '')).lower()
                     _, p_score = process.extractOne(search_query_lower, [text_to_search])
                     df_master.at[idx, 'Toplam_Puan'] = p_score
                     
